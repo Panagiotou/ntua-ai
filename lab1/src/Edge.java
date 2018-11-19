@@ -1,13 +1,15 @@
-
 public class Edge {
-	
+
 	private Node u;
 	private Node v;
 	private double weight;
-	private String name;
-	
-	public Edge(Node from, Node to, String roadName) {
-		// TODO Fill in
+	public int name;
+
+	public Edge(Node from, Node to, int roadId) {
+            u = from;
+            v = to;
+            name = roadId;
+            weight = u.pNorm(v, 2);
 	}
-	
+
 }
