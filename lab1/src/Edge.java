@@ -12,4 +12,8 @@ public class Edge {
             weight = u.pNorm(v, 2);
 	}
 
+	public void printEdge() {
+		System.out.println("From " + String.valueOf(u) + " To : " + String.valueOf(v) + " W = " + String.valueOf(weight));
+	}
+
 }
