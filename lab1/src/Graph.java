@@ -86,7 +86,6 @@ public class Graph {
 
 								ArrayList<Node> newnodes = new ArrayList<Node>();
 								for(Node key: nodes){
-										int numOf = 0;
 										Node tmp = new Node();
 										tmp.x = key.x;
 										tmp.y = key.y;
@@ -95,7 +94,6 @@ public class Graph {
 										ArrayList<Point> poArr = new ArrayList<Point>();
                     poArr = nodeMap.get(key);
 										for(Point po: poArr){
-											numOf += 1;
 											int currid = po.id;
 											if(currid>0){
 												Point prev  = points.get(currid-1);
@@ -116,7 +114,7 @@ public class Graph {
 											}
 										}
 										tmp.setAdj(adjacent);
-										tmp.numOfNeighbors = numOf;
+										tmp.numOfNeighbors = adjacent.size();
 										newnodes.add(tmp);
                 }
 								ArrayList<Node> nodeList = new ArrayList<Node>();
@@ -219,6 +217,6 @@ public class Graph {
                 String nodesfile = "../resources/nodes.csv";
                 String clientsfile = "../resources/clients.csv";
 		Graph g = new Graph(nodesfile);
-		//g.printNodeList();
+		g.printNodeList();
 	}
 }
