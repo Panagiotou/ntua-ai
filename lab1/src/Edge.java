@@ -1,8 +1,8 @@
 public class Edge {
 
-	private Node u;
-	private Node v;
-	private double weight;
+	public Node u;
+	public Node v;
+	public double weight;
 	public int name;
 
 	public Edge(Node from, Node to, int roadId) {

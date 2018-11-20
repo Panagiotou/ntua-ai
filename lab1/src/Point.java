@@ -21,7 +21,12 @@ public class Point {
 	}
 
 	public double pNorm(Point other, int p) {
-		return nthRoot(Math.pow(x - other.x, p) + Math.pow(y - other.y, p), p);
+		if (p != Integer.MAX_VALUE) return nthRoot(Math.pow(x - other.x, p) + Math.pow(y - other.y, p), p);
+		else {
+			double dx = Math.abs(x - other.x);
+			double dy = Math.abs(y - other.y);
+			return Math.max(dx, dy);
+		}
 	}
 
     public void printPoint(){
@@ -31,7 +36,7 @@ public class Point {
     }
 
 		public int hashCode() {
-			Double tmp = new Double(x + y);
+			String tmp = String.valueOf(x) + String.valueOf(y);
 			return tmp.hashCode();
 		}
 		public boolean equals(Object other) {

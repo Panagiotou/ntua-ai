@@ -1,9 +1,9 @@
 
 public class Estimator {
-	private Node from;
-	private Node to;
-	private double actual_distance;
-	private double heuristic_estimate;
+	public Node from;
+	public Node to;
+	public double actual_distance;
+	public double heuristic_estimate;
 	
 	public Estimator(Node u, Node v, double g, double h) {
 		from = u;

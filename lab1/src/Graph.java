@@ -1,8 +1,10 @@
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Stack;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -127,7 +129,7 @@ public class Graph {
 
 
   public void parseClientFile(String clientsFile) {
-    clients = null;
+    clients = new ArrayList<Client>();
     String line = "";
     String cvsSplitBy = ",";
     int NewId = 0; //counts client id
@@ -198,11 +200,84 @@ public class Graph {
     return taxis;
   }
 
-  public void callTaxi(Node s, Node g) {
-      HashSet<Node> visited = new HashSet<Node>();
-
-
-
+  // Heuristic function
+  public double h(Node s, Node t) {
+	  return s.pNorm(t, 1);
+  }
+  
+  // h_total works for multiple goals taking the min of h(s, g_i)
+  public double h_total(Node s, HashSet<Node> goals) {
+	  double result = Double.MAX_VALUE;
+	  for (Node t : goals) {
+		  if (h(s, t) < result) result = h(s, t);
+	  }
+	  return result;
+  }
+  
+  public Hashtable<Node, Stack<Estimator>> aStar(Node s, HashSet<Node> goals) {
+      // Closed set
+	  HashSet<Node> closedSet = new HashSet<Node>();
+	  
+	  // Frontier (Open Set)
+	  PriorityQueue<Estimator> frontier = new PriorityQueue<Estimator>();
+	  Estimator e0 = new Estimator(s, s, 0, h_total(s, goals));
+	  frontier.add(e0);
+	  
+	  // Scores
+	  Hashtable<Node, Double> gScore = new Hashtable<Node, Double>();
+	  Hashtable<Node, Double> fScore = new Hashtable<Node, Double>();
+	  Hashtable<Node, Stack<Estimator>> parent = new Hashtable<Node, Stack<Estimator>>();
+	  
+	  // Initializations
+	  for (Node n : nodeList) {
+		  gScore.put(n, Double.MAX_VALUE);
+		  fScore.put(n, Double.MAX_VALUE);
+		  parent.put(n, new Stack<Estimator>());
+	  }
+	  // Initialize Estimators for starting node
+	  gScore.put(s, 0.0);
+	  fScore.put(s, h_total(s, goals));
+	  
+	  
+	  while (!frontier.isEmpty()) {
+		  Estimator current = frontier.remove();
+		  
+		  // Break if it finds a goal
+		  if (goals.contains(current.from)) break;
+		  
+		  
+		  for (Edge e : current.from.adjacent) {
+			  // if it is visited
+			  if (closedSet.contains(e.v)) continue;
+			  
+			  
+			  // relax edge
+			  double temp = gScore.get(current.from) + e.weight;
+			  if (temp > gScore.get(e.v)) continue;
+			  
+			  // update score
+			  gScore.put(e.v, temp);
+			  fScore.put(e.v, temp + h_total(e.v, goals));
+			  
+			  Estimator est = new Estimator(e.u, e.v, gScore.get(e.v), h_total(e.v, goals));			  
+			  
+			  closedSet.add(e.v);
+			  
+			  if (!frontier.contains(est)) {
+				  frontier.add(est);
+				  Stack<Estimator> current_history = parent.get(e.v);
+				  while(!current_history.isEmpty() && current_history.peek().actual_distance > est.actual_distance)
+					  current_history.pop();
+				  
+				  current_history.add(est);
+				  parent.put(e.v, current_history);
+			  }
+			  
+		  }
+		  
+	  }
+	  // Return shortest path DAG
+	  return parent;
   }
 
 
@@ -211,7 +286,8 @@ public class Graph {
     String nodesFile = "../resources/nodes.csv";
     String clientsFile = "../resources/client.csv";
     Graph G = new Graph(nodesFile);
-
+    G.parseClientFile(clientsFile);
+    
     Node p = G.nodeList.get(10);
     Node q = G.nodeList.get(5);
 
