@@ -14,6 +14,7 @@ public class Graph {
   private Hashtable<Node, ArrayList<Point>> nodesMap; // Maps a Node to many Points
   private Hashtable<Point, Node> pointsMap; // Maps a Point to a Node
   private ArrayList<Client> clients; // clients array list
+  private HashSet<Taxi> taxis;
 
   public Graph(String nodesFile) {
     // creates graph topology
@@ -194,10 +195,32 @@ public class Graph {
     }
   }
 
-  public ArrayList<Taxi> parseTaxiFile(String taxisFile) {
-    ArrayList<Taxi> taxis = null;
-    // parse taxis
-    return taxis;
+  public void parseTaxiFile(String taxisFile) {
+    taxis = new HashSet<Taxi>();
+    
+    String line = "";
+    String cvsSplitBy = ",";
+    try (BufferedReader br = new BufferedReader(new FileReader(taxisFile))) {
+
+      line = br.readLine(); // skip first line.
+
+      while ((line = br.readLine()) != null) {
+
+        // use comma as separator
+        String[] Coord = line.split(cvsSplitBy);
+
+        Taxi t = new Taxi();
+        t.x =  Double.parseDouble(Coord[0]);
+        t.y =  Double.parseDouble(Coord[1]);
+        t.id = Integer.parseInt(Coord[2]);
+        
+        taxis.add(t);
+        
+      }
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   // Heuristic function
@@ -286,8 +309,10 @@ public class Graph {
     // main
     String nodesFile = "../resources/nodes.csv";
     String clientsFile = "../resources/client.csv";
+    String taxisFile = "../resources/taxis.csv";
     Graph G = new Graph(nodesFile);
     G.parseClientFile(clientsFile);
+    G.parseTaxiFile(taxisFile);
     
     Node p = G.nodeList.get(10);
     Node q = G.nodeList.get(5);
