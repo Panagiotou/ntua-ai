@@ -214,7 +214,7 @@ public class Graph {
 	  return result;
   }
   
-  public Hashtable<Node, Stack<Estimator>> aStar(Node s, HashSet<Node> goals) {
+  public Solution aStar(Node s, HashSet<Node> goals) {
       // Closed set
 	  HashSet<Node> closedSet = new HashSet<Node>();
 	  
@@ -237,10 +237,10 @@ public class Graph {
 	  // Initialize Estimators for starting node
 	  gScore.put(s, 0.0);
 	  fScore.put(s, h_total(s, goals));
-	  
+	  Estimator current = null;
 	  
 	  while (!frontier.isEmpty()) {
-		  Estimator current = frontier.remove();
+		  current = frontier.remove();
 		  
 		  // Break if it finds a goal
 		  if (goals.contains(current.from)) break;
@@ -276,8 +276,9 @@ public class Graph {
 		  }
 		  
 	  }
+	  
 	  // Return shortest path DAG
-	  return parent;
+	  return new Solution(current.from, parent);
   }
 
 
