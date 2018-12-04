@@ -197,7 +197,7 @@ public class Graph {
 
   public void parseTaxiFile(String taxisFile) {
     taxis = new HashSet<Taxi>();
-    
+
     String line = "";
     String cvsSplitBy = ",";
     try (BufferedReader br = new BufferedReader(new FileReader(taxisFile))) {
@@ -213,9 +213,9 @@ public class Graph {
         t.x =  Double.parseDouble(Coord[0]);
         t.y =  Double.parseDouble(Coord[1]);
         t.id = Integer.parseInt(Coord[2]);
-        
+
         taxis.add(t);
-        
+
       }
 
     } catch (IOException e) {
@@ -227,7 +227,7 @@ public class Graph {
   public double h(Node s, Node t) {
 	  return s.pNorm(t, 1);
   }
-  
+
   // h_total works for multiple goals taking the min of h(s, g_i)
   public double h_total(Node s, HashSet<Node> goals) {
 	  double result = Double.MAX_VALUE;
@@ -236,21 +236,21 @@ public class Graph {
 	  }
 	  return result;
   }
-  
+
   public Solution aStar(Node s, HashSet<Node> goals) {
       // Closed set
 	  HashSet<Node> closedSet = new HashSet<Node>();
-	  
+
 	  // Frontier (Open Set)
 	  PriorityQueue<Estimator> frontier = new PriorityQueue<Estimator>();
 	  Estimator e0 = new Estimator(s, s, 0, h_total(s, goals));
 	  frontier.add(e0);
-	  
+
 	  // Scores
 	  Hashtable<Node, Double> gScore = new Hashtable<Node, Double>();
 	  Hashtable<Node, Double> fScore = new Hashtable<Node, Double>();
 	  Hashtable<Node, Stack<Estimator>> parent = new Hashtable<Node, Stack<Estimator>>();
-	  
+
 	  // Initializations
 	  for (Node n : nodeList) {
 		  gScore.put(n, Double.MAX_VALUE);
@@ -261,45 +261,45 @@ public class Graph {
 	  gScore.put(s, 0.0);
 	  fScore.put(s, h_total(s, goals));
 	  Estimator current = null;
-	  
+
 	  while (!frontier.isEmpty()) {
 		  current = frontier.remove();
-		  
+
 		  // Break if it finds a goal
 		  if (goals.contains(current.from)) break;
-		  
-		  
+
+
 		  for (Edge e : current.from.adjacent) {
 			  // if it is visited
 			  if (closedSet.contains(e.v)) continue;
-			  
-			  
+
+
 			  // relax edge
 			  double temp = gScore.get(current.from) + e.weight;
 			  if (temp > gScore.get(e.v)) continue;
-			  
+
 			  // update score
 			  gScore.put(e.v, temp);
 			  fScore.put(e.v, temp + h_total(e.v, goals));
-			  
-			  Estimator est = new Estimator(e.u, e.v, gScore.get(e.v), h_total(e.v, goals));			  
-			  
+
+			  Estimator est = new Estimator(e.u, e.v, gScore.get(e.v), h_total(e.v, goals));
+
 			  closedSet.add(e.v);
-			  
+
 			  if (!frontier.contains(est)) {
 				  frontier.add(est);
 				  Stack<Estimator> current_history = parent.get(e.v);
 				  while(!current_history.isEmpty() && current_history.peek().actual_distance > est.actual_distance)
 					  current_history.pop();
-				  
+
 				  current_history.add(est);
 				  parent.put(e.v, current_history);
 			  }
-			  
+
 		  }
-		  
+
 	  }
-	  
+
 	  // Return shortest path DAG
 	  return new Solution(current.from, parent);
   }
@@ -310,12 +310,26 @@ public class Graph {
     String nodesFile = "../resources/nodes.csv";
     String clientsFile = "../resources/client.csv";
     String taxisFile = "../resources/taxis.csv";
+    /*
     Graph G = new Graph(nodesFile);
     G.parseClientFile(clientsFile);
     G.parseTaxiFile(taxisFile);
-    
+
     Node p = G.nodeList.get(10);
     Node q = G.nodeList.get(5);
+    */
+    ArrayList<Node> nodes = new ArrayList<Node>();
+    Node no = new Node();
+    no.x = 23.7614542;
+    no.y = 37.9864972;
+    nodes.add(no);
+    Node no1 = new Node();
+    no1.x = 23.7615506;
+    no1.y = 37.9866341;
+    nodes.add(no1);
 
+    String outputFile = "../report/test.kml";
+    Visual V = new Visual(nodes);
+    V.createKML(outputFile, "Test route");
   }
 }
