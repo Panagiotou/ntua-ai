@@ -5,21 +5,30 @@ import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
 import java.io.Writer;
 import java.io.IOException;
+import java.util.Set;
+import java.util.HashSet;
 
 public class Visual{
-  public ArrayList<Node> nodes;
+  public ArrayList<ArrayList<Node>> nodesListList;
+  public Set<Node> NodeSet;
+  public ArrayList<Node> allnodes;
 
-  public Visual(ArrayList<Node> e) {
-    this.nodes = e;
+  public Visual(ArrayList<ArrayList<Node>> e, ArrayList<Node> all) {
+    this.nodesListList = e;
+    Set<Node> N = new HashSet<>();
+    this.NodeSet = N;
+    this.allnodes = all;
   }
 
-  public String createPlacemark(String name){
+  public String createPlacemark(ArrayList<Node> nodeList, int i){
     String nodeString = "";
-    for(Node no: this.nodes){
-      nodeString += "\t\t\t\t\t"+ String.valueOf(no.x) + "," + String.valueOf(no.y) +",0\n";
+    for(Node no: nodeList){
+      if (! this.NodeSet.contains(no)){
+        nodeString += "\t\t\t\t\t"+ String.valueOf(no.x) + "," + String.valueOf(no.y) +",0\n";
+      }
     }
     String kmlPlacemark =   "\t\t<Placemark>\n" +
-                            "\t\t\t<name>" + name + "</name>\n"+
+                            "\t\t\t<name> Route " + String.valueOf(i) + " </name>\n"+
                             "\t\t\t<styleUrl>#green</styleUrl>\n" +
                             "\t\t\t<LineString>\n" +
                             "\t\t\t\t<altitudeMode>relative</altitudeMode>\n" +
@@ -31,7 +40,7 @@ public class Visual{
    return kmlPlacemark;
   }
 
-  public void createKML(String s, String name){
+  public void createKML(String s){
     Writer writer = null;
     try {
       writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(s), "utf-8"));
@@ -43,7 +52,7 @@ public class Visual{
         String kmlStyleGreen =  "\t\t<Style id=\"green\">\n" +
                                 "\t\t\t<Linestyle>\n" +
                                 "\t\t\t\t<color>ff009900</color>\n" +
-                                "\t\t\t\t<width>4</width>\n" +
+                                "\t\t\t\t<width>10</width>\n" +
                                 "\t\t\t</Linestyle>\n"+
                                 "\t\t</Style>\n";
 
@@ -61,7 +70,12 @@ public class Visual{
         writer.write(kmlStart);
         writer.write(kmlStyleGreen);
         writer.write(kmlStyleRed);
-        writer.write(this.createPlacemark(name));
+        int j = 0;
+        for(ArrayList<Node> nolist: this.nodesListList){
+          writer.write(this.createPlacemark(nolist, j));
+          this.NodeSet.add(this.allnodes.get(j));
+          j += 1;
+        }
         writer.write(kmlEnd);
 
     } catch (IOException ex) {

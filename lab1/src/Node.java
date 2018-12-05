@@ -36,10 +36,6 @@ public class Node{
 
     }
   }
-  public void setAdj(ArrayList<Edge> adj){
-    ArrayList<Edge> adja = new ArrayList<Edge>(adj);
-    adjacent = adja;
-  }
   public void printNode(){
     System.out.println("Node (x,y) = ("+String.valueOf(x) +","+ String.valueOf(y)  +")");
     if( !adjacent.isEmpty()){
@@ -51,6 +47,10 @@ public class Node{
     else{
       System.out.println("This Node has no Neighbors");
     }
+  }
+
+  public String printCoord(){
+    return "(x,y) = ("+String.valueOf(x) +","+ String.valueOf(y)  +")";
   }
 
   public static double nthRoot(double A, int N) {

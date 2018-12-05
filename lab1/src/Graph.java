@@ -3,6 +3,8 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.Queue;
+import java.util.LinkedList;
 import java.util.Hashtable;
 import java.util.Stack;
 import java.io.BufferedReader;
@@ -27,7 +29,6 @@ public class Graph {
     String line = "";
     String cvsSplitBy = ",";
     int i = 0;
-    ArrayList<Edge> adjac = new ArrayList<Edge> ();
     // First itteration
     try (BufferedReader br = new BufferedReader(new FileReader(nodesFile))) {
 
@@ -48,7 +49,6 @@ public class Graph {
         Node no = new Node();
         no.x = Double.parseDouble(Coord[0]);
         no.y = Double.parseDouble(Coord[1]);
-        no.setAdj(adjac);
         no.numOfNeighbors = -1;
         if (! NodeSet.contains(no)){
           NodeSet.add(no);
@@ -64,10 +64,17 @@ public class Graph {
 
     for (i = 0; i < points.size(); i++){
       // create nodeMap
+
+      // Critical Point i need to get the node no (of the list nodes) that hax no.x == po.x and no.y == po.y
       Point po = points.get(i);
-      Node no = new Node();
-      no.x = po.x;
-      no.y = po.y;
+      int k = 0;
+      for(Node nod: nodes){
+        if((nod.x == po.x) && (nod.y == po.y)){
+          break;
+        }
+        k += 1;
+      }
+      Node no = nodes.get(k);
       ArrayList<Point> poArr = new ArrayList<Point>();
       if(! nodeMap.containsKey(no)){
         poArr = new ArrayList<Point>();
@@ -89,10 +96,7 @@ public class Graph {
 
     ArrayList<Node> newnodes = new ArrayList<Node>();
     for(Node key: nodes) {
-      Node tmp = new Node();
-      tmp.x = key.x;
-      tmp.y = key.y;
-      ArrayList<Edge> adjacent = new ArrayList<Edge> ();
+
 
       ArrayList<Point> poArr = new ArrayList<Point>();
       poArr = nodeMap.get(key);
@@ -103,8 +107,8 @@ public class Graph {
           if(po.rhodeId == prev.rhodeId){
             // If on same rhode, find node matching to previous, make an edge, add it to the ArrayList
             Node prevNode = pointMap.get(prev);
-            Edge tempEdge = new Edge(prevNode, key, prev.rhodeId);
-            adjacent.add(tempEdge);
+            Edge tempEdge = new Edge(key,prevNode, prev.rhodeId);
+            key.adjacent.add(tempEdge);
           }
         }
         if(currid +1 < points.size()){
@@ -112,13 +116,12 @@ public class Graph {
           if(po.rhodeId == next.rhodeId){
             Node nextNode = pointMap.get(next);
             Edge tempEdge = new Edge(key, nextNode, next.rhodeId);
-            adjacent.add(tempEdge);
+            key.adjacent.add(tempEdge);
           }
         }
       }
-      tmp.setAdj(adjacent);
-      tmp.numOfNeighbors = adjacent.size();
-      newnodes.add(tmp);
+      key.numOfNeighbors = key.adjacent.size();
+      newnodes.add(key);
     }
     ArrayList<Node> nodeList = new ArrayList<Node>();
     this.nodeList = newnodes;
@@ -318,18 +321,51 @@ public class Graph {
     Node p = G.nodeList.get(10);
     Node q = G.nodeList.get(5);
     */
-    ArrayList<Node> nodes = new ArrayList<Node>();
-    Node no = new Node();
-    no.x = 23.7614542;
-    no.y = 37.9864972;
-    nodes.add(no);
-    Node no1 = new Node();
-    no1.x = 23.7615506;
-    no1.y = 37.9866341;
-    nodes.add(no1);
-
+    int rhodeId = 5168803;
+    ArrayList<Node> allnodes = new ArrayList<Node>();
+    ArrayList<ArrayList<Node>> nodesListList = new ArrayList<ArrayList<Node>>();
+    Graph G = new Graph(nodesFile);
+    allnodes = G.nodeList;
+    for(Node no: allnodes){
+      ArrayList<Node> temp = new ArrayList<Node>();
+      for(Edge e: no.adjacent){
+            temp.add(e.u);
+            temp.add(e.v);
+      }
+      nodesListList.add(temp);
+    }
     String outputFile = "../report/test.kml";
-    Visual V = new Visual(nodes);
-    V.createKML(outputFile, "Test route");
+    Visual V = new Visual(nodesListList, allnodes);
+    V.createKML(outputFile);
+    //--------------------μαριος
+
+    Set<Node> visited = new HashSet<>();
+    Queue<Node> q = new LinkedList<Node>();
+    //G.printNodeList();
+	  q.add(G.nodeList.get(0));
+    int i = 0;
+	  while(!q.isEmpty()) {
+      System.out.println("Node " + String.valueOf(i) + " removed from Queue");
+		  Node p = q.remove();
+      visited.add(p);
+      i += 1;
+		  p.printNode();
+
+		  for (Node r : G.nodeList) {
+			  if (r == p) {
+				  System.out.println("yr");
+				  break;
+			  }
+		  }
+
+		  for (Edge e : p.adjacent) {
+          if(! visited.contains(e.v)){
+            q.add(e.v);
+          }
+          if(! visited.contains(e.u)){
+            q.add(e.u);
+          }
+		  }
+	  }
   }
 }

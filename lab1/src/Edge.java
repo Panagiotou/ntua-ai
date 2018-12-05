@@ -13,7 +13,7 @@ public class Edge {
 	}
 
 	public void printEdge() {
-		System.out.println("From " + String.valueOf(u) + " To : " + String.valueOf(v) + " W = " + String.valueOf(weight));
+		System.out.println("From " + u.printCoord() + " To : " + v.printCoord() + " W = " + String.valueOf(weight));
 	}
 
 }
