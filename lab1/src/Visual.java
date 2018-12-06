@@ -50,17 +50,17 @@ public class Visual{
                         "\t\t<name>Output KML File</name>\n";
 
         String kmlStyleGreen =  "\t\t<Style id=\"green\">\n" +
-                                "\t\t\t<Linestyle>\n" +
+                                "\t\t\t<LineStyle>\n" +
                                 "\t\t\t\t<color>ff009900</color>\n" +
                                 "\t\t\t\t<width>10</width>\n" +
-                                "\t\t\t</Linestyle>\n"+
+                                "\t\t\t</LineStyle>\n"+
                                 "\t\t</Style>\n";
 
         String kmlStyleRed  =   "\t\t<Style id=\"red\">\n" +
-                                "\t\t\t<Linestyle>\n" +
+                                "\t\t\t<LineStyle>\n" +
                                 "\t\t\t\t<color>ff009900</color>\n" +
                                 "\t\t\t\t<width>4</width>\n" +
-                                "\t\t\t</Linestyle>\n" +
+                                "\t\t\t</LineStyle>\n" +
                                 "\t\t</Style>\n";
 
 

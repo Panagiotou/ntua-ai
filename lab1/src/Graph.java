@@ -25,9 +25,9 @@ public class Graph {
 	  clients = new ArrayList<Node>();
 	  taxis = new Hashtable<Node, Integer>();
 	  points = new HashSet<Point>();
-	  
+
   }
-  
+
   public Graph(String nodesFile) {
     // creates graph topology
     Hashtable<Node, ArrayList<Point>> nodeMap = new Hashtable<Node,ArrayList<Point>>();
@@ -39,7 +39,7 @@ public class Graph {
     String line = "";
     String cvsSplitBy = ",";
     int i = 0;
-    // First itteration
+    // First itempArreration
     try (BufferedReader br = new BufferedReader(new FileReader(nodesFile))) {
 
       line = br.readLine(); // skip first line.
@@ -58,7 +58,7 @@ public class Graph {
           points.add(po);
         }
         Node no = new Node(Double.parseDouble(Coord[0]), Double.parseDouble(Coord[1]));
-        
+
         no.numOfNeighbors = -1;
         if (! NodeSet.contains(no)){
           NodeSet.add(no);
@@ -131,7 +131,7 @@ public class Graph {
     this.nodesMap = nodeMap;
     this.pointsMap = pointMap;
     this.points = new HashSet<Point>(this.pointsMap.keySet());
-    
+
   }
 
   public Node getClosestPoint(Point p) {
@@ -143,13 +143,13 @@ public class Graph {
 			  argmin = q;
 		  }
 	  }
-	 
+
 	 Node t = pointsMap.get(argmin);
 	 return t;
-	 
+
   }
-  
-  
+
+
   public void parseClientFile(String clientsFile) {
     clients = new ArrayList<Node>();
     String line = "";
@@ -165,10 +165,10 @@ public class Graph {
         double x =  Double.parseDouble(Coord[0]);
         double y =  Double.parseDouble(Coord[1]);
         Point tmp = new Point(x, y);
-       
+
         Node customer = getClosestPoint(tmp);
         clients.add(customer);
-        
+
       }
 
     } catch (IOException e) {
@@ -185,7 +185,7 @@ public class Graph {
       poArr = this.nodesMap.get(key);
       if(poArr.size() >1){
         key.printNode();
-        
+
 
         System.out.println("Corresponds to points:");
         for(Point po: poArr){
@@ -234,7 +234,6 @@ public class Graph {
         Integer id = new Integer(Integer.parseInt(Coord[2]));
         Point p = new Point(x, y);
         Node t = getClosestPoint(p);
-        t.printNode();
         taxis.put(t, id);
 
       }
@@ -246,7 +245,7 @@ public class Graph {
 
   // Heuristic function
   public double h(Node s, Node t) {
-	  return s.pNorm(t, 2);
+	  return 0.707 * s.pNorm(t, 1);
   }
 
   // h_total works for multiple goals taking the min of h(s, g_i)
@@ -258,7 +257,7 @@ public class Graph {
 	  return result;
   }
 
-  public void aStar(Node s, HashSet<Node> goals) {
+  public void aStar(Node s, HashSet<Node> goals, int i) {
       // Closed set
 	  HashSet<Node> closedSet = new HashSet<Node>();
 
@@ -270,8 +269,7 @@ public class Graph {
 	  // Scores
 	  Hashtable<Node, Double> gScore = new Hashtable<Node, Double>();
 	  Hashtable<Node, Double> fScore = new Hashtable<Node, Double>();
-	  Hashtable<Node, Node> parent = new Hashtable<Node, Node>();
-	  Hashtable<Node, ArrayList<Pair>> pparent = new Hashtable<Node, ArrayList<Pair>>();
+	  Hashtable<Node, ArrayList<Pair>> parent = new Hashtable<Node, ArrayList<Pair>>();
 
 	  // Initializations
 	  for (Node n : nodeList) {
@@ -282,30 +280,29 @@ public class Graph {
 	  gScore.put(s, 0.0);
 	  fScore.put(s, h_total(s, goals));
 	  Estimator current = null;
-	  parent.put(s, s);
-	  ArrayList<Pair> tt = new ArrayList<Pair>();
-	  tt.add(new Pair(s, 0));
-	  pparent.put(s, tt);
-	  
+	  ArrayList<Pair> tempArr = new ArrayList<Pair>();
+	  tempArr.add(new Pair(s, 0));
+	  parent.put(s, tempArr);
+
 	  System.out.println("Starting point is " + s.printCoord());
 
 	  while (!frontier.isEmpty()) {
 		  current = frontier.remove();
-		  
+
 		  // Break if it finds a goal
 		  if (goals.contains(current.from)) {
 			  System.out.println("Goal found with cost from start " + gScore.get(current.from));
 			  System.out.print("Goal coordinates " + current.from.printCoord());
-			  
+
 			  try {
 				  System.out.println(" which corresponds to taxi " + taxis.get(current.from));
-				    
+
 			  } catch (NullPointerException e) {
 				  e.printStackTrace();
 			  } finally {
 				  System.out.println();
 			  }
-			 
+
 			  break;
 		  }
 
@@ -318,9 +315,6 @@ public class Graph {
 			  // relax edge
 			  double temp = gScore.get(current.from) + e.weight;
 			  if (temp > gScore.get(e.v)) continue;
-			  
-			 
-
 
 			  // update score
 			  gScore.put(e.v, temp);
@@ -330,95 +324,80 @@ public class Graph {
 
 			  closedSet.add(e.v);
 
+        // If it is not included in the frontier
 			  if (!frontier.contains(est)) {
 				  frontier.add(est);
-				  parent.put(e.v, current.from);
-				  tt = new ArrayList<Pair>();
-				  tt.add(new Pair(current.from, temp));
-				  pparent.put(e.v, tt);
+				  tempArr = new ArrayList<Pair>();
+				  tempArr.add(new Pair(current.from, temp));
+				  parent.put(e.v, tempArr);
 
 			  }
+        // If there is an estimate in the frontier
 			  else {
-				  tt = pparent.get(e.v);
-				  tt.add(new Pair(current.from, temp));
-				  pparent.put(e.v, tt);				  
+				  tempArr = parent.get(e.v);
+				  tempArr.add(new Pair(current.from, temp));
+				  parent.put(e.v, tempArr);
 			  }
-			  
+
 		  }
 
 	  }
-	  
+
 	  ArrayList<ArrayList<Node>> result = new ArrayList<ArrayList<Node>>();
 
-	  
+    // Create edges for all equivalent paths
 	  Queue<Node> q = new LinkedList<Node>();
-	  HashSet<Node> parentKeys = new HashSet<Node>(pparent.keySet());
 	  q.add(current.from);
-	  
-	  System.out.println(parentKeys.size());
+
 	  closedSet.clear();
 	  closedSet.add(current.from);
 	  while (!q.isEmpty()) {
 		  Node u = q.remove();
-		  for (Pair pr : pparent.get(u)) {
+		  for (Pair pr : parent.get(u)) {
 			  ArrayList<Node> segment = new ArrayList<Node>();
+        // find optimal estimates
 			  if (!closedSet.contains(pr.first) && pr.second == gScore.get(u)) {
 				  segment.add(u);
 				  segment.add(pr.first);
 				  result.add(segment);
 				  closedSet.add(pr.first);
 				  q.add(pr.first);
-				  System.out.println(pr.toString() + " " + gScore.get(u));
-			  }  
+			  }
 		  }
-		  
+
 	  }
 
-	  Visual printer = new Visual(result, 0);
-	  printer.createKML("./test.kml");
-	  	
-	  
-	  
-	  // Return shortest path DAG
-//	  return new Solution(current.from, parent);
+    // Create KML
+	  Visual printer = new Visual(result, i);
+	  printer.createKML("./client" + String.valueOf(i) + ".kml");
+
   }
 
   public void simulateRides() {
-	  HashSet<Node> goals = new HashSet<Node>(taxis.keySet()); 
+	  HashSet<Node> goals = new HashSet<Node>(taxis.keySet());
 	  int i = 0;
-	 
-	  
+
 	  for (Node c : clients) {
 		  System.out.println("Serving client: " + i);
-		  aStar(c, goals);
-		  
+		  aStar(c, goals, i);
 		  i++;
-	  }  
+	  }
   }
-  
-  public void plotSolution(Solution sol, int i) {
-	  
 
-	  
-	 
-	  
-  }
 
   public static void main(String[] argv) {
-    // main
+    // Filenames
     String nodesFile = "../resources/nodes.csv";
     String clientsFile = "../resources/client.csv";
     String taxisFile = "../resources/taxis.csv";
-   
+
+    // Parse files
     Graph G = new Graph(nodesFile);
     G.parseClientFile(clientsFile);
     G.parseTaxiFile(taxisFile);
 
-        
+    // Simulate rides
     G.simulateRides();
-    
-    
-//    System.out.println("Nodes visited = " + String.valueOf(visited.size()));
-//    System.out.println("Nodes in nodeList = " + String.valueOf(G.nodeList.size()));
+
   }
 }
