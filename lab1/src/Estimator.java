@@ -1,7 +1,6 @@
 
 public class Estimator implements Comparable {
 	public Node from;
-	public Node to;
 	public double actual_distance;
 	public double heuristic_estimate;
 	

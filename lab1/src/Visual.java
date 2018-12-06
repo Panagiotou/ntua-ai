@@ -11,16 +11,16 @@ import java.util.HashSet;
 public class Visual{
   public ArrayList<ArrayList<Node>> nodesListList;
   public Set<Node> NodeSet;
-  public ArrayList<Node> allnodes;
+  public int routeId;
 
-  public Visual(ArrayList<ArrayList<Node>> e, ArrayList<Node> all) {
+  public Visual(ArrayList<ArrayList<Node>> e, int routeid) {
     this.nodesListList = e;
     Set<Node> N = new HashSet<>();
     this.NodeSet = N;
-    this.allnodes = all;
+    this.routeId = routeid;
   }
 
-  public String createPlacemark(ArrayList<Node> nodeList, int i){
+  public String createPlacemark(ArrayList<Node> nodeList){
     String nodeString = "";
     for(Node no: nodeList){
       if (! this.NodeSet.contains(no)){
@@ -28,7 +28,7 @@ public class Visual{
       }
     }
     String kmlPlacemark =   "\t\t<Placemark>\n" +
-                            "\t\t\t<name> Route " + String.valueOf(i) + " </name>\n"+
+                            "\t\t\t<name> Route " + String.valueOf(routeId) + " </name>\n"+
                             "\t\t\t<styleUrl>#green</styleUrl>\n" +
                             "\t\t\t<LineString>\n" +
                             "\t\t\t\t<altitudeMode>relative</altitudeMode>\n" +
@@ -70,11 +70,8 @@ public class Visual{
         writer.write(kmlStart);
         writer.write(kmlStyleGreen);
         writer.write(kmlStyleRed);
-        int j = 0;
         for(ArrayList<Node> nolist: this.nodesListList){
-          writer.write(this.createPlacemark(nolist, j));
-          this.NodeSet.add(this.allnodes.get(j));
-          j += 1;
+          writer.write(this.createPlacemark(nolist));
         }
         writer.write(kmlEnd);
 

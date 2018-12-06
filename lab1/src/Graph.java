@@ -19,6 +19,15 @@ public class Graph {
   private Hashtable<Node, Integer> taxis;
   private HashSet<Point> points;
 
+  public Graph() {
+	  nodeList = new ArrayList<Node>();
+	  nodesMap = new Hashtable<Node, ArrayList<Point>>();
+	  clients = new ArrayList<Node>();
+	  taxis = new Hashtable<Node, Integer>();
+	  points = new HashSet<Point>();
+	  
+  }
+  
   public Graph(String nodesFile) {
     // creates graph topology
     Hashtable<Node, ArrayList<Point>> nodeMap = new Hashtable<Node,ArrayList<Point>>();
@@ -249,7 +258,7 @@ public class Graph {
 	  return result;
   }
 
-  public Solution aStar(Node s, HashSet<Node> goals) {
+  public void aStar(Node s, HashSet<Node> goals) {
       // Closed set
 	  HashSet<Node> closedSet = new HashSet<Node>();
 
@@ -261,24 +270,24 @@ public class Graph {
 	  // Scores
 	  Hashtable<Node, Double> gScore = new Hashtable<Node, Double>();
 	  Hashtable<Node, Double> fScore = new Hashtable<Node, Double>();
-	  Hashtable<Node, Stack<Estimator>> parent = new Hashtable<Node, Stack<Estimator>>();
+	  Hashtable<Node, Node> parent = new Hashtable<Node, Node>();
 
 	  // Initializations
 	  for (Node n : nodeList) {
 		  gScore.put(n, Double.MAX_VALUE);
 		  fScore.put(n, Double.MAX_VALUE);
-		  parent.put(n, new Stack<Estimator>());
 	  }
 	  // Initialize Estimators for starting node
 	  gScore.put(s, 0.0);
 	  fScore.put(s, h_total(s, goals));
 	  Estimator current = null;
+	  parent.put(s, s);
 	  
 	  System.out.println("Starting point is " + s.printCoord());
 
 	  while (!frontier.isEmpty()) {
 		  current = frontier.remove();
-
+		  
 		  // Break if it finds a goal
 		  if (goals.contains(current.from)) {
 			  System.out.println("Goal found with cost from start " + gScore.get(current.from));
@@ -316,20 +325,32 @@ public class Graph {
 
 			  if (!frontier.contains(est)) {
 				  frontier.add(est);
-				  Stack<Estimator> current_history = parent.get(e.v);
-				  while(!current_history.isEmpty() && current_history.peek().actual_distance > est.actual_distance)
-					  current_history.pop();
-
-				  current_history.add(est);
-				  parent.put(e.v, current_history);
+				  parent.put(e.v, current.from);
 			  }
 
 		  }
 
 	  }
+	  
+	  ArrayList<ArrayList<Node>> result = new ArrayList<ArrayList<Node>>();
 
+	  
+	  ArrayList<Node> path = new ArrayList<Node>();
+	  Node p = current.from;
+	  while (p != parent.get(p)) {
+		  p.printNode();
+		  path.add(p);
+		  p = parent.get(p);
+		  
+	  }
+	  result.add(path);
+	  Visual printer = new Visual(result, 0);
+	  printer.createKML("./test.kml");
+
+	  
+	  
 	  // Return shortest path DAG
-	  return new Solution(current.from, parent);
+//	  return new Solution(current.from, parent);
   }
 
   public void simulateRides() {
@@ -340,15 +361,18 @@ public class Graph {
 	  for (Node c : clients) {
 		  System.out.println("Serving client: " + i);
 		  aStar(c, goals);
-
 		  
 		  i++;
-	  }
-	  
-	  
-	  
+	  }  
   }
   
+  public void plotSolution(Solution sol, int i) {
+	  
+
+	  
+	 
+	  
+  }
 
   public static void main(String[] argv) {
     // main
@@ -360,49 +384,7 @@ public class Graph {
     G.parseClientFile(clientsFile);
     G.parseTaxiFile(taxisFile);
 
-    Node p = G.nodeList.get(10);
-    Node q = G.nodeList.get(5);
-    
-//    int rhodeId = 5168803;
-//    ArrayList<Node> allnodes = new ArrayList<Node>();
-//    ArrayList<ArrayList<Node>> nodesListList = new ArrayList<ArrayList<Node>>();
-//    Graph G = new Graph(nodesFile);
-//    allnodes = G.nodeList;
-//    for(Node no: allnodes){
-//      ArrayList<Node> temp = new ArrayList<Node>();
-//      for(Edge e: no.adjacent){
-//            temp.add(e.u);
-//            temp.add(e.v);
-//      }
-//      nodesListList.add(temp);
-//    }
-//    String outputFile = "../report/test.kml";
-//    Visual V = new Visual(nodesListList, allnodes);
-//    V.createKML(outputFile);
-
-//    HashSet<Node> visited = new HashSet<Node>();
-//
-//
-//	  Queue<Node> q = new LinkedList<Node>();
-//
-//	  visited.add(G.nodeList.get(0));
-//	  q.add(G.nodeList.get(0));
-//
-//	  while(!q.isEmpty()) {
-//		  Node p = q.remove();
-//		  p.printNode();
-//
-//
-//		  for (Edge e : p.adjacent) {
-//				  if (!visited.contains(e.v)) {
-//					  q.add(e.v);
-//					  visited.add(e.v);
-//				  }
-//		  }
-//	  }
-    
-    
-    
+        
     G.simulateRides();
     
     
