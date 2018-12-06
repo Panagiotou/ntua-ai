@@ -22,9 +22,9 @@ public class Node{
   }
 
   public double pNorm(Node other, int p) {
-    return nthRoot(Math.pow(x - other.x, p) + Math.pow(y - other.y, p), p);
+    return nthRoot(Math.pow(Math.abs(x - other.x), p) + Math.pow(Math.abs(y - other.y), p), p);
   }
-  public int hashCode() {
+  public int hashCode() {		
     Double tmp = new Double(x+y);
     return tmp.hashCode();
   }

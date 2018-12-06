@@ -15,8 +15,9 @@ public class Graph {
   private ArrayList<Node> nodeList;
   private Hashtable<Node, ArrayList<Point>> nodesMap; // Maps a Node to many Points
   private Hashtable<Point, Node> pointsMap; // Maps a Point to a Node
-  private ArrayList<Client> clients; // clients array list
-  private HashSet<Taxi> taxis;
+  private ArrayList<Node> clients; // clients array list
+  private Hashtable<Node, Integer> taxis;
+  private HashSet<Point> points;
 
   public Graph(String nodesFile) {
     // creates graph topology
@@ -47,9 +48,8 @@ public class Graph {
           po = new Point(Double.parseDouble(Coord[0]), Double.parseDouble(Coord[1]), Integer.parseInt(Coord[2]), "None", i);
           points.add(po);
         }
-        Node no = new Node();
-        no.x = Double.parseDouble(Coord[0]);
-        no.y = Double.parseDouble(Coord[1]);
+        Node no = new Node(Double.parseDouble(Coord[0]), Double.parseDouble(Coord[1]));
+        
         no.numOfNeighbors = -1;
         if (! NodeSet.contains(no)){
           NodeSet.add(no);
@@ -121,14 +121,30 @@ public class Graph {
     Hashtable<Point, Node> pointsMap = new Hashtable<Point, Node>();
     this.nodesMap = nodeMap;
     this.pointsMap = pointMap;
+    this.points = new HashSet<Point>(this.pointsMap.keySet());
+    
   }
 
-
+  public Node getClosestPoint(Point p) {
+	  double dist = Double.MAX_VALUE;
+	  Point argmin = null;
+	  for (Point q : points) {
+		  if (p.pNorm(q, 2) <= dist) {
+			  dist = p.pNorm(q, 2);
+			  argmin = q;
+		  }
+	  }
+	 
+	 Node t = pointsMap.get(argmin);
+	 return t;
+	 
+  }
+  
+  
   public void parseClientFile(String clientsFile) {
-    clients = new ArrayList<Client>();
+    clients = new ArrayList<Node>();
     String line = "";
     String cvsSplitBy = ",";
-    int NewId = 0; //counts client id
     try (BufferedReader br = new BufferedReader(new FileReader(clientsFile))) {
 
       line = br.readLine(); // skip first line.
@@ -137,13 +153,13 @@ public class Graph {
 
         // use comma as separator
         String[] Coord = line.split(cvsSplitBy);
-
-        Client customer = new Client();
-        customer.x =  Double.parseDouble(Coord[0]);
-        customer.y =  Double.parseDouble(Coord[1]);
-        customer.setid(NewId);
+        double x =  Double.parseDouble(Coord[0]);
+        double y =  Double.parseDouble(Coord[1]);
+        Point tmp = new Point(x, y);
+       
+        Node customer = getClosestPoint(tmp);
         clients.add(customer);
-        NewId += 1;
+        
       }
 
     } catch (IOException e) {
@@ -159,7 +175,8 @@ public class Graph {
       ArrayList<Point> poArr = new ArrayList<Point>();
       poArr = this.nodesMap.get(key);
       if(poArr.size() >1){
-        System.out.println("Node (x,y) = ("+String.valueOf(key.x) +","+ String.valueOf(key.y)  +")");
+        key.printNode();
+        
 
         System.out.println("Corresponds to points:");
         for(Point po: poArr){
@@ -191,7 +208,7 @@ public class Graph {
   }
 
   public void parseTaxiFile(String taxisFile) {
-    taxis = new HashSet<Taxi>();
+    taxis = new Hashtable<Node, Integer>();
 
     String line = "";
     String cvsSplitBy = ",";
@@ -203,13 +220,13 @@ public class Graph {
 
         // use comma as separator
         String[] Coord = line.split(cvsSplitBy);
-
-        Taxi t = new Taxi();
-        t.x =  Double.parseDouble(Coord[0]);
-        t.y =  Double.parseDouble(Coord[1]);
-        t.id = Integer.parseInt(Coord[2]);
-
-        taxis.add(t);
+        double x =  Double.parseDouble(Coord[0]);
+        double y =  Double.parseDouble(Coord[1]);
+        Integer id = new Integer(Integer.parseInt(Coord[2]));
+        Point p = new Point(x, y);
+        Node t = getClosestPoint(p);
+        t.printNode();
+        taxis.put(t, id);
 
       }
 
@@ -238,7 +255,7 @@ public class Graph {
 
 	  // Frontier (Open Set)
 	  PriorityQueue<Estimator> frontier = new PriorityQueue<Estimator>();
-	  Estimator e0 = new Estimator(s, s, 0, h_total(s, goals));
+	  Estimator e0 = new Estimator(s, 0, h_total(s, goals));
 	  frontier.add(e0);
 
 	  // Scores
@@ -256,12 +273,28 @@ public class Graph {
 	  gScore.put(s, 0.0);
 	  fScore.put(s, h_total(s, goals));
 	  Estimator current = null;
+	  
+	  System.out.println("Starting point is " + s.printCoord());
 
 	  while (!frontier.isEmpty()) {
 		  current = frontier.remove();
 
 		  // Break if it finds a goal
-		  if (goals.contains(current.from)) break;
+		  if (goals.contains(current.from)) {
+			  System.out.println("Goal found with cost from start " + gScore.get(current.from));
+			  System.out.print("Goal coordinates " + current.from.printCoord());
+			  
+			  try {
+				  System.out.println(" which corresponds to taxi " + taxis.get(current.from));
+				    
+			  } catch (NullPointerException e) {
+				  e.printStackTrace();
+			  } finally {
+				  System.out.println();
+			  }
+			 
+			  break;
+		  }
 
 
 		  for (Edge e : current.from.adjacent) {
@@ -277,7 +310,7 @@ public class Graph {
 			  gScore.put(e.v, temp);
 			  fScore.put(e.v, temp + h_total(e.v, goals));
 
-			  Estimator est = new Estimator(e.u, e.v, gScore.get(e.v), h_total(e.v, goals));
+			  Estimator est = new Estimator(e.v, gScore.get(e.v), h_total(e.v, goals));
 
 			  closedSet.add(e.v);
 
@@ -299,57 +332,81 @@ public class Graph {
 	  return new Solution(current.from, parent);
   }
 
+  public void simulateRides() {
+	  HashSet<Node> goals = new HashSet<Node>(taxis.keySet()); 
+	  int i = 0;
+	 
+	  
+	  for (Node c : clients) {
+		  System.out.println("Serving client: " + i);
+		  aStar(c, goals);
+
+		  
+		  i++;
+	  }
+	  
+	  
+	  
+  }
+  
 
   public static void main(String[] argv) {
     // main
     String nodesFile = "../resources/nodes.csv";
     String clientsFile = "../resources/client.csv";
     String taxisFile = "../resources/taxis.csv";
-    /*
+   
     Graph G = new Graph(nodesFile);
     G.parseClientFile(clientsFile);
     G.parseTaxiFile(taxisFile);
 
     Node p = G.nodeList.get(10);
     Node q = G.nodeList.get(5);
-    */
-    int rhodeId = 5168803;
-    ArrayList<Node> allnodes = new ArrayList<Node>();
-    ArrayList<ArrayList<Node>> nodesListList = new ArrayList<ArrayList<Node>>();
-    Graph G = new Graph(nodesFile);
-    allnodes = G.nodeList;
-    for(Node no: allnodes){
-      ArrayList<Node> temp = new ArrayList<Node>();
-      for(Edge e: no.adjacent){
-            temp.add(e.u);
-            temp.add(e.v);
-      }
-      nodesListList.add(temp);
-    }
-    String outputFile = "../report/test.kml";
-    Visual V = new Visual(nodesListList, allnodes);
-    V.createKML(outputFile);
-    HashSet<Node> visited = new HashSet<Node>();
+    
+//    int rhodeId = 5168803;
+//    ArrayList<Node> allnodes = new ArrayList<Node>();
+//    ArrayList<ArrayList<Node>> nodesListList = new ArrayList<ArrayList<Node>>();
+//    Graph G = new Graph(nodesFile);
+//    allnodes = G.nodeList;
+//    for(Node no: allnodes){
+//      ArrayList<Node> temp = new ArrayList<Node>();
+//      for(Edge e: no.adjacent){
+//            temp.add(e.u);
+//            temp.add(e.v);
+//      }
+//      nodesListList.add(temp);
+//    }
+//    String outputFile = "../report/test.kml";
+//    Visual V = new Visual(nodesListList, allnodes);
+//    V.createKML(outputFile);
 
-
-	  Queue<Node> q = new LinkedList<Node>();
-
-	  visited.add(G.nodeList.get(0));
-	  q.add(G.nodeList.get(0));
-
-	  while(!q.isEmpty()) {
-		  Node p = q.remove();
-		  p.printNode();
-
-
-		  for (Edge e : p.adjacent) {
-				  if (!visited.contains(e.v)) {
-					  q.add(e.v);
-					  visited.add(e.v);
-				  }
-		  }
-	  }
-    System.out.println("Nodes visited = " + String.valueOf(visited.size()));
-    System.out.println("Nodes in nodeList = " + String.valueOf(G.nodeList.size()));
+//    HashSet<Node> visited = new HashSet<Node>();
+//
+//
+//	  Queue<Node> q = new LinkedList<Node>();
+//
+//	  visited.add(G.nodeList.get(0));
+//	  q.add(G.nodeList.get(0));
+//
+//	  while(!q.isEmpty()) {
+//		  Node p = q.remove();
+//		  p.printNode();
+//
+//
+//		  for (Edge e : p.adjacent) {
+//				  if (!visited.contains(e.v)) {
+//					  q.add(e.v);
+//					  visited.add(e.v);
+//				  }
+//		  }
+//	  }
+    
+    
+    
+    G.simulateRides();
+    
+    
+//    System.out.println("Nodes visited = " + String.valueOf(visited.size()));
+//    System.out.println("Nodes in nodeList = " + String.valueOf(G.nodeList.size()));
   }
 }

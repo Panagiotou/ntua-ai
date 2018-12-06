@@ -5,19 +5,24 @@ public class Point {
 	public double x;
 	public double y;
 	public int rhodeId;
-        public String rhodeName;
-        public int id;
+    public String rhodeName;
+    public int id;
 
 	public Point(double X, double Y, int rId, String rN, int Id) {
 		x = X;
 		y = Y;
-                rhodeId = rId;
-                rhodeName = rN;
-                id = Id;
+        rhodeId = rId;
+        rhodeName = rN;
+        id = Id;
 	}
-
+	
 	public Point() {
 		x = y = 0;
+	}
+	
+	public Point(double X, double Y) {
+		x = X;
+		y = Y;
 	}
 
 	public double pNorm(Point other, int p) {
