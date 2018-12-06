@@ -246,7 +246,7 @@ public class Graph {
 
   // Heuristic function
   public double h(Node s, Node t) {
-	  return s.pNorm(t, 1);
+	  return s.pNorm(t, 2);
   }
 
   // h_total works for multiple goals taking the min of h(s, g_i)
@@ -271,6 +271,7 @@ public class Graph {
 	  Hashtable<Node, Double> gScore = new Hashtable<Node, Double>();
 	  Hashtable<Node, Double> fScore = new Hashtable<Node, Double>();
 	  Hashtable<Node, Node> parent = new Hashtable<Node, Node>();
+	  Hashtable<Node, ArrayList<Pair>> pparent = new Hashtable<Node, ArrayList<Pair>>();
 
 	  // Initializations
 	  for (Node n : nodeList) {
@@ -282,6 +283,9 @@ public class Graph {
 	  fScore.put(s, h_total(s, goals));
 	  Estimator current = null;
 	  parent.put(s, s);
+	  ArrayList<Pair> tt = new ArrayList<Pair>();
+	  tt.add(new Pair(s, 0));
+	  pparent.put(s, tt);
 	  
 	  System.out.println("Starting point is " + s.printCoord());
 
@@ -314,6 +318,9 @@ public class Graph {
 			  // relax edge
 			  double temp = gScore.get(current.from) + e.weight;
 			  if (temp > gScore.get(e.v)) continue;
+			  
+			 
+
 
 			  // update score
 			  gScore.put(e.v, temp);
@@ -326,8 +333,17 @@ public class Graph {
 			  if (!frontier.contains(est)) {
 				  frontier.add(est);
 				  parent.put(e.v, current.from);
-			  }
+				  tt = new ArrayList<Pair>();
+				  tt.add(new Pair(current.from, temp));
+				  pparent.put(e.v, tt);
 
+			  }
+			  else {
+				  tt = pparent.get(e.v);
+				  tt.add(new Pair(current.from, temp));
+				  pparent.put(e.v, tt);				  
+			  }
+			  
 		  }
 
 	  }
@@ -335,18 +351,32 @@ public class Graph {
 	  ArrayList<ArrayList<Node>> result = new ArrayList<ArrayList<Node>>();
 
 	  
-	  ArrayList<Node> path = new ArrayList<Node>();
-	  Node p = current.from;
-	  while (p != parent.get(p)) {
-		  p.printNode();
-		  path.add(p);
-		  p = parent.get(p);
+	  Queue<Node> q = new LinkedList<Node>();
+	  HashSet<Node> parentKeys = new HashSet<Node>(pparent.keySet());
+	  q.add(current.from);
+	  
+	  System.out.println(parentKeys.size());
+	  closedSet.clear();
+	  closedSet.add(current.from);
+	  while (!q.isEmpty()) {
+		  Node u = q.remove();
+		  for (Pair pr : pparent.get(u)) {
+			  ArrayList<Node> segment = new ArrayList<Node>();
+			  if (!closedSet.contains(pr.first) && pr.second == gScore.get(u)) {
+				  segment.add(u);
+				  segment.add(pr.first);
+				  result.add(segment);
+				  closedSet.add(pr.first);
+				  q.add(pr.first);
+				  System.out.println(pr.toString() + " " + gScore.get(u));
+			  }  
+		  }
 		  
 	  }
-	  result.add(path);
+
 	  Visual printer = new Visual(result, 0);
 	  printer.createKML("./test.kml");
-
+	  	
 	  
 	  
 	  // Return shortest path DAG
