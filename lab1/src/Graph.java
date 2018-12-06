@@ -38,12 +38,13 @@ public class Graph {
 
         // use comma as separator
         String[] Coord = line.split(cvsSplitBy);
+        Point po;
         if(Coord.length == 4){
-          Point po = new Point(Double.parseDouble(Coord[0]), Double.parseDouble(Coord[1]), Integer.parseInt(Coord[2]), Coord[3], i);
+          po = new Point(Double.parseDouble(Coord[0]), Double.parseDouble(Coord[1]), Integer.parseInt(Coord[2]), Coord[3], i);
           points.add(po);
         }
         else{
-          Point po = new Point(Double.parseDouble(Coord[0]), Double.parseDouble(Coord[1]), Integer.parseInt(Coord[2]), "None", i);
+          po = new Point(Double.parseDouble(Coord[0]), Double.parseDouble(Coord[1]), Integer.parseInt(Coord[2]), "None", i);
           points.add(po);
         }
         Node no = new Node();
@@ -53,6 +54,13 @@ public class Graph {
         if (! NodeSet.contains(no)){
           NodeSet.add(no);
           nodes.add(no);
+          //create pointMap (reverse of nodeMap)
+          if( pointMap.containsKey(po)){
+            continue;
+          }
+          else{
+            pointMap.put(po, no);
+          }
         }
 
         i += 1;
@@ -62,19 +70,11 @@ public class Graph {
     }
     // Make hashtables
 
-    for (i = 0; i < points.size(); i++){
+    for (Point po: points){
       // create nodeMap
 
       // Critical Point i need to get the node no (of the list nodes) that hax no.x == po.x and no.y == po.y
-      Point po = points.get(i);
-      int k = 0;
-      for(Node nod: nodes){
-        if((nod.x == po.x) && (nod.y == po.y)){
-          break;
-        }
-        k += 1;
-      }
-      Node no = nodes.get(k);
+      Node no = pointMap.get(po);
       ArrayList<Point> poArr = new ArrayList<Point>();
       if(! nodeMap.containsKey(no)){
         poArr = new ArrayList<Point>();
@@ -84,14 +84,6 @@ public class Graph {
       }
       poArr.add(po);
       nodeMap.put(no, poArr);
-      //create pointMap (reverse of nodeMap)
-      if( pointMap.containsKey(po)){
-        continue;
-      }
-      else{
-        pointMap.put(po, no);
-      }
-
     }
 
     ArrayList<Node> newnodes = new ArrayList<Node>();
@@ -337,35 +329,27 @@ public class Graph {
     String outputFile = "../report/test.kml";
     Visual V = new Visual(nodesListList, allnodes);
     V.createKML(outputFile);
-    //--------------------μαριος
+    HashSet<Node> visited = new HashSet<Node>();
 
-    Set<Node> visited = new HashSet<>();
-    Queue<Node> q = new LinkedList<Node>();
-    //G.printNodeList();
+
+	  Queue<Node> q = new LinkedList<Node>();
+
+	  visited.add(G.nodeList.get(0));
 	  q.add(G.nodeList.get(0));
-    int i = 0;
+
 	  while(!q.isEmpty()) {
-      System.out.println("Node " + String.valueOf(i) + " removed from Queue");
 		  Node p = q.remove();
-      visited.add(p);
-      i += 1;
 		  p.printNode();
 
-		  for (Node r : G.nodeList) {
-			  if (r == p) {
-				  System.out.println("yr");
-				  break;
-			  }
-		  }
 
 		  for (Edge e : p.adjacent) {
-          if(! visited.contains(e.v)){
-            q.add(e.v);
-          }
-          if(! visited.contains(e.u)){
-            q.add(e.u);
-          }
+				  if (!visited.contains(e.v)) {
+					  q.add(e.v);
+					  visited.add(e.v);
+				  }
 		  }
 	  }
+    System.out.println("Nodes visited = " + String.valueOf(visited.size()));
+    System.out.println("Nodes in nodeList = " + String.valueOf(G.nodeList.size()));
   }
 }
