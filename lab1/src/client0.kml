@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+	<kml xmlns="http://earth.google.com/kml/2.1">
+	<Document>
+		<name>Output KML File</name>
+		<Style id="green">
+			<LineStyle>
+				<color>ff009900</color>
+				<width>10</width>
+			</LineStyle>
+		</Style>
+		<Style id="red">
+			<LineStyle>
+				<color>ff009900</color>
+				<width>4</width>
+			</LineStyle>
+		</Style>
+		<Placemark>
+			<name> Route 0 </name>
+			<styleUrl>#green</styleUrl>
+			<LineString>
+				<altitudeMode>relative</altitudeMode>
+				<coordinates>
+					23.77428,38.01074,0
+					23.77319,38.01345,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name> Route 0 </name>
+			<styleUrl>#green</styleUrl>
+			<LineString>
+				<altitudeMode>relative</altitudeMode>
+				<coordinates>
+					23.77319,38.01345,0
+					23.77218,38.01316,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+	</Document>
+</kml>
