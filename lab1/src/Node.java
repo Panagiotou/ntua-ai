@@ -25,7 +25,7 @@ public class Node{
     return nthRoot(Math.pow(Math.abs(x - other.x), p) + Math.pow(Math.abs(y - other.y), p), p);
   }
   public int hashCode() {		
-    Double tmp = new Double(x+y);
+    String tmp = String.valueOf(x) + String.valueOf(y);
     return tmp.hashCode();
   }
   public boolean equals(Object other) {
