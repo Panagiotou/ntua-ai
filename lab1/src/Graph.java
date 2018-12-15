@@ -387,9 +387,9 @@ public class Graph {
 
   public static void main(String[] argv) {
     // Filenames
-    String nodesFile = "../resources/nodes.csv";
-    String clientsFile = "../resources/client.csv";
-    String taxisFile = "../resources/taxis.csv";
+    String nodesFile = "../resources/nodestest.csv";
+    String clientsFile = "../resources/clienttest.csv";
+    String taxisFile = "../resources/taxistest.csv";
 
     // Parse files
     Graph G = new Graph(nodesFile);

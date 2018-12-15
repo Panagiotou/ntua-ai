@@ -15,11 +15,11 @@ public class Point {
         rhodeName = rN;
         id = Id;
 	}
-	
+
 	public Point() {
 		x = y = 0;
 	}
-	
+
 	public Point(double X, double Y) {
 		x = X;
 		y = Y;

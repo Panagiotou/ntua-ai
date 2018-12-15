@@ -24,10 +24,11 @@ public class Node{
   public double pNorm(Node other, int p) {
     return nthRoot(Math.pow(Math.abs(x - other.x), p) + Math.pow(Math.abs(y - other.y), p), p);
   }
-  public int hashCode() {		
+  public int hashCode() {
     String tmp = String.valueOf(x) + String.valueOf(y);
     return tmp.hashCode();
   }
+
   public boolean equals(Object other) {
     if (getClass() != other.getClass()) return false;
     else {
