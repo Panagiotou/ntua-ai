@@ -22,13 +22,18 @@ public class Node{
   }
 
   public double pNorm(Node other, int p) {
-    return nthRoot(Math.pow(Math.abs(x - other.x), p) + Math.pow(Math.abs(y - other.y), p), p);
+	  	if (p == 1) {
+	  		return Math.abs(x - other.x) + Math.abs(y - other.y);
+	  	}
+	  	else if (p == 2) {
+			return Math.sqrt(Math.pow(x - other.x, 2) + Math.pow(y - other.y, 2));
+		}
+		else return nthRoot(Math.pow(Math.abs(x - other.x), p) + Math.pow(Math.abs(y - other.y), p), p);
   }
-  public int hashCode() {
+  public int hashCode() {		
     String tmp = String.valueOf(x) + String.valueOf(y);
     return tmp.hashCode();
   }
-
   public boolean equals(Object other) {
     if (getClass() != other.getClass()) return false;
     else {
@@ -54,6 +59,25 @@ public class Node{
     return "(x,y) = ("+String.valueOf(x) +","+ String.valueOf(y)  +")";
   }
 
+  
+  public double haversine(Node p) {
+	  // haversine distance calclulation
+	  
+	  double lon1 = p.x;
+	  double lat1 = p.y;
+	  double lon2 = x;
+	  double lat2 = y;
+	  double theta = lon1 - lon2;
+	
+	  double distance = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2)) +
+			  Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
+	  
+	  return Math.toDegrees(Math.acos(distance)) * 111.18957696;
+	  
+  }
+  
+  
+  
   public static double nthRoot(double A, int N) {
 
     double xPre = Math.random() % 10;

@@ -26,13 +26,36 @@ public class Point {
 	}
 
 	public double pNorm(Point other, int p) {
-		if (p != Integer.MAX_VALUE) return nthRoot(Math.pow(x - other.x, p) + Math.pow(y - other.y, p), p);
+		if (p == 1) {
+			return Math.abs(x - other.x) + Math.abs(y - other.y)
+		}
+		else if (p == 2) {
+			return Math.sqrt(Math.pow(x - other.x, 2) + Math.pow(y - other.y, 2));
+		}
+		else if (p != Integer.MAX_VALUE) return nthRoot(Math.pow(x - other.x, p) + Math.pow(y - other.y, p), p);
 		else {
 			double dx = Math.abs(x - other.x);
 			double dy = Math.abs(y - other.y);
 			return Math.max(dx, dy);
 		}
 	}
+	
+	  public double haversine(Point p) {
+		  // haversine distance calclulation
+		  
+		  double lon1 = p.x;
+		  double lat1 = p.y;
+		  double lon2 = x;
+		  double lat2 = y;
+		  double theta = lon1 - lon2;
+		
+		  double distance = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2)) +
+				  Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
+		  
+		  return Math.toDegrees(Math.acos(distance)) * 111.18957696;
+		  
+	  }
+	  
 
     public void printPoint(){
         System.out.println("x, y = " + String.valueOf(x) +" "+ String.valueOf(y));
