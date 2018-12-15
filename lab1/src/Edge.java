@@ -9,7 +9,7 @@ public class Edge {
             u = from;
             v = to;
             name = roadId;
-            weight = u.pNorm(v, 2);
+            weight = u.haversine(v);
 	}
 
 	public void printEdge() {

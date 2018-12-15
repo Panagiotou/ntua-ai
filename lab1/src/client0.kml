@@ -20,8 +20,8 @@
 			<LineString>
 				<altitudeMode>relative</altitudeMode>
 				<coordinates>
-					23.77428,38.01074,0
-					23.77319,38.01345,0
+					23.77222,38.01022,0
+					23.77115,38.0129339826,0
 				</coordinates>
 			</LineString>
 		</Placemark>
@@ -31,7 +31,7 @@
 			<LineString>
 				<altitudeMode>relative</altitudeMode>
 				<coordinates>
-					23.77319,38.01345,0
+					23.77115,38.0129339826,0
 					23.77218,38.01316,0
 				</coordinates>
 			</LineString>

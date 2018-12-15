@@ -138,8 +138,8 @@ public class Graph {
 	  double dist = Double.MAX_VALUE;
 	  Point argmin = null;
 	  for (Point q : points) {
-		  if (p.pNorm(q, 2) <= dist) {
-			  dist = p.pNorm(q, 2);
+		  if (p.haversine(q) <= dist) {
+			  dist = p.haversine(q);
 			  argmin = q;
 		  }
 	  }
@@ -245,7 +245,7 @@ public class Graph {
 
   // Heuristic function
   public double h(Node s, Node t) {
-	  return 0.707 * s.pNorm(t, 1);
+	  return 0.707 * s.haversine(t);
   }
 
   // h_total works for multiple goals taking the min of h(s, g_i)
@@ -386,10 +386,14 @@ public class Graph {
 
 
   public static void main(String[] argv) {
-    // Filenames
-    String nodesFile = "../resources/nodestest.csv";
-    String clientsFile = "../resources/clienttest.csv";
-    String taxisFile = "../resources/taxistest.csv";
+	System.out.println("==============");
+	System.out.println("Original File");  
+	System.out.println("==============");
+	
+	// Filenames
+    String nodesFile = "../resources/nodes.csv";
+    String clientsFile = "../resources/client.csv";
+    String taxisFile = "../resources/taxis.csv";
 
     // Parse files
     Graph G = new Graph(nodesFile);
@@ -398,6 +402,25 @@ public class Graph {
 
     // Simulate rides
     G.simulateRides();
+
+    
+    
+    System.out.println("==============");
+	System.out.println("Testcases"); 
+    System.out.println("==============");
+	
+    // Filenames
+    String testnodesFile = "../resources/nodestest.csv";
+    String testclientsFile = "../resources/clienttest.csv";
+    String testtaxisFile = "../resources/taxistest.csv";
+
+    // Parse files
+    Graph Gtest = new Graph(testnodesFile);
+    Gtest.parseClientFile(testclientsFile);
+    Gtest.parseTaxiFile(testtaxisFile);
+
+    // Simulate rides
+    Gtest.simulateRides();
 
   }
 }

@@ -27,7 +27,7 @@ public class Point {
 
 	public double pNorm(Point other, int p) {
 		if (p == 1) {
-			return Math.abs(x - other.x) + Math.abs(y - other.y)
+			return Math.abs(x - other.x) + Math.abs(y - other.y);
 		}
 		else if (p == 2) {
 			return Math.sqrt(Math.pow(x - other.x, 2) + Math.pow(y - other.y, 2));
