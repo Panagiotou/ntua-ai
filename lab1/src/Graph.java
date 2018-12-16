@@ -18,6 +18,7 @@ public class Graph {
   private ArrayList<Node> clients; // clients array list
   private Hashtable<Node, Integer> taxis;
   private HashSet<Point> points;
+  private int ntest;
 
   public Graph() {
 	  nodeList = new ArrayList<Node>();
@@ -25,11 +26,13 @@ public class Graph {
 	  clients = new ArrayList<Node>();
 	  taxis = new Hashtable<Node, Integer>();
 	  points = new HashSet<Point>();
-
+	  ntest = 0;
+	  
   }
 
-  public Graph(String nodesFile) {
+  public Graph(String nodesFile, int Ntest) {
     // creates graph topology
+	ntest = Ntest;
     Hashtable<Node, ArrayList<Point>> nodeMap = new Hashtable<Node,ArrayList<Point>>();
     Hashtable<Point, Node> pointMap = new Hashtable<Point, Node>();
 
@@ -288,7 +291,8 @@ public class Graph {
 
 	  while (!frontier.isEmpty()) {
 		  current = frontier.remove();
-
+		  
+		  
 		  // Break if it finds a goal
 		  if (goals.contains(current.from)) {
 			  System.out.println("Goal found with cost from start " + gScore.get(current.from));
@@ -306,6 +310,8 @@ public class Graph {
 			  break;
 		  }
 
+		  closedSet.add(current.from);
+		  
 
 		  for (Edge e : current.from.adjacent) {
 			  // if it is visited
@@ -315,7 +321,8 @@ public class Graph {
 			  // relax edge
 			  double temp = gScore.get(current.from) + e.weight;
 			  if (temp > gScore.get(e.v)) continue;
-
+			  
+              
 			  // update score
 			  gScore.put(e.v, temp);
 			  fScore.put(e.v, temp + h_total(e.v, goals));
@@ -369,7 +376,7 @@ public class Graph {
 
     // Create KML
 	  Visual printer = new Visual(result, i);
-	  printer.createKML("./client" + String.valueOf(i) + ".kml");
+	  printer.createKML("results/testcase_" + ntest + "_client_" + String.valueOf(i) + ".kml");
 
   }
 
@@ -385,42 +392,42 @@ public class Graph {
   }
 
 
-  public static void main(String[] argv) {
-	System.out.println("==============");
-	System.out.println("Original File");  
-	System.out.println("==============");
-	
-	// Filenames
-    String nodesFile = "../resources/nodes.csv";
-    String clientsFile = "../resources/client.csv";
-    String taxisFile = "../resources/taxis.csv";
+  public static void main(String[] args) {
 
-    // Parse files
-    Graph G = new Graph(nodesFile);
-    G.parseClientFile(clientsFile);
-    G.parseTaxiFile(taxisFile);
+	 System.out.println("Running Testcases (defaults to 3 but can be provided as an argument)");
+	 int ncases = 3;
+	 
+	 try {
+		 ncases = Integer.parseInt(args[0]);
+	 }
+  	 catch (NumberFormatException e) {
+  		 System.err.println("Argument" + args[0] + " must be an integer.");
+  		 // Program ends
+  		 System.exit(1);
+  	 }
+	 catch (ArrayIndexOutOfBoundsException e) {
+		System.out.println("No ncases provided, defaults to 3"); 
+		ncases = 3; 
+	 }
+	  
+	    
+	    System.out.println("===============");
+		System.out.println("===Testcases==="); 
+	    System.out.println("===============");
+	 
+	  
+	 for (int i = 0; i < ncases; i++) {
+		 System.out.println("Testcase #" + i);
+		 String nodesFile = "../resources/data/" + i + "/nodes.csv";
+		 String clientsFile = "../resources/data/" + i + "/client.csv";
+		 String taxisFile = "../resources/data/" + i + "/taxis.csv";
+		 Graph G = new Graph(nodesFile, i);
+		 G.parseClientFile(clientsFile);
+		 G.parseTaxiFile(taxisFile);
+		 G.simulateRides();
+		 System.out.println("==============");
 
-    // Simulate rides
-    G.simulateRides();
-
-    
-    
-    System.out.println("==============");
-	System.out.println("Testcases"); 
-    System.out.println("==============");
-	
-    // Filenames
-    String testnodesFile = "../resources/nodestest.csv";
-    String testclientsFile = "../resources/clienttest.csv";
-    String testtaxisFile = "../resources/taxistest.csv";
-
-    // Parse files
-    Graph Gtest = new Graph(testnodesFile);
-    Gtest.parseClientFile(testclientsFile);
-    Gtest.parseTaxiFile(testtaxisFile);
-
-    // Simulate rides
-    Gtest.simulateRides();
+	 }
 
   }
 }
