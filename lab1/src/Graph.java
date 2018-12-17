@@ -349,23 +349,24 @@ public class Graph {
 			  // h[e.v] = min over all goals of h_i [e.v, g] (keep argmin as well)
 			  Estimator est = new Estimator(e.v, temp, h_total(e.v, goals));
 			  
+              if (frontier.contains(est) && temp > gScore.get(e.v)) continue;
 	
-			  // If the estimate is worse ignore it
-        	  if (temp > gScore.get(e.v)) continue;
         	  // If it is not included in the frontier then it is the current best  
-        	  if (!frontier.contains(est)) {
-				  frontier.add(est);
-			  }
+              if (frontier.contains(est)) {
+                  frontier.remove(est);
+                  frontier.add(est);
+              }
+              else {
+                  frontier.add(est);
+			  } 
          
               // update parent
               
               if (parent.get(e.v) == null) {
-                System.out.println("is o");
                 tempArr = new ArrayList<Pair>();
                 tempArr.add(new Pair(current.from, temp));      
                 parent.put(e.v, tempArr);
               } else {
-                System.out.println("is more");
                 tempArr = parent.get(e.v);
                 tempArr.add(new Pair(current.from, temp));
                 parent.put(e.v, tempArr);
