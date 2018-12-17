@@ -12,12 +12,14 @@ public class Visual{
   public ArrayList<ArrayList<Node>> nodesListList;
   public Set<Node> NodeSet;
   public int routeId;
+  public String color;
 
-  public Visual(ArrayList<ArrayList<Node>> e, int routeid) {
+  public Visual(ArrayList<ArrayList<Node>> e, int routeid, String colour) {
     this.nodesListList = e;
     Set<Node> N = new HashSet<>();
     this.NodeSet = N;
     this.routeId = routeid;
+    this.color = colour;
   }
 
   public String createPlacemark(ArrayList<Node> nodeList){
@@ -29,7 +31,7 @@ public class Visual{
     }
     String kmlPlacemark =   "\t\t<Placemark>\n" +
                             "\t\t\t<name> Route " + String.valueOf(routeId) + " </name>\n"+
-                            "\t\t\t<styleUrl>#green</styleUrl>\n" +
+                            "\t\t\t<styleUrl>#" + color +  "</styleUrl>\n" +
                             "\t\t\t<LineString>\n" +
                             "\t\t\t\t<altitudeMode>relative</altitudeMode>\n" +
                             "\t\t\t\t<coordinates>\n" +
@@ -58,8 +60,8 @@ public class Visual{
 
         String kmlStyleRed  =   "\t\t<Style id=\"red\">\n" +
                                 "\t\t\t<LineStyle>\n" +
-                                "\t\t\t\t<color>ff009900</color>\n" +
-                                "\t\t\t\t<width>4</width>\n" +
+                                "\t\t\t\t<color>ff000000</color>\n" +
+                                "\t\t\t\t<width>10</width>\n" +
                                 "\t\t\t</LineStyle>\n" +
                                 "\t\t</Style>\n";
 

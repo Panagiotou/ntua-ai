@@ -21,6 +21,7 @@ public class Graph {
   private Hashtable<Node, Integer> taxis;
   private HashSet<Point> points;
   private int ntest;
+  private double TOLERANCE;
 
   public Graph() {
 	  nodeList = new ArrayList<Node>();
@@ -29,15 +30,16 @@ public class Graph {
 	  taxis = new Hashtable<Node, Integer>();
 	  points = new HashSet<Point>();
 	  ntest = 0;
+      TOLERANCE = 0;
 	  
   }
 
-  public Graph(String nodesFile, int Ntest) {
+  public Graph(String nodesFile, int Ntest, double tol) {
     // creates graph topology
 	ntest = Ntest;
     Hashtable<Node, ArrayList<Point>> nodeMap = new Hashtable<Node,ArrayList<Point>>();
     Hashtable<Point, Node> pointMap = new Hashtable<Point, Node>();
-
+    TOLERANCE = tol;
     ArrayList<Point> points = new ArrayList<Point>();
     Set<Node> NodeSet = new HashSet<>();
     ArrayList<Node> nodes = new ArrayList<Node>();
@@ -326,7 +328,6 @@ public class Graph {
 				  System.out.println();
 			  }
 			  
-              break;  			  
 		  }
 		  
 		  if (correct != null && current.actual_distance > gScore.get(correct)) break;
@@ -397,7 +398,13 @@ public class Graph {
 		  for (Pair pr : parent.get(u)) {
 			  ArrayList<Node> segment = new ArrayList<Node>();
 			  // find optimal estimates pr.second == gScore.get(u)
-			  if (!closedSet.contains(pr.first) && gScore.get(u) == pr.second  && towards.get(u) == correct) {
+              if (TOLERANCE > 0) {
+                  flag = Math.abs(gScore.get(u) - pr.second) < TOLERANCE;
+              }
+              else {
+                  flag = gScore.get(u) == pr.second;
+              }
+			  if (!closedSet.contains(pr.first) && flag  && towards.get(u) == correct) {
 				  cnt++;
                   segment.add(u);
 				  segment.add(pr.first);
@@ -406,13 +413,22 @@ public class Graph {
 				  q.add(pr.first);
 			  }
 		  }
-		  if (cnt > 1) System.out.println("This is great");  
+          if (cnt > 1) System.out.println("This is great");
 
 	  }
 
+      String tl = null;
     // Create KML
-	  Visual printer = new Visual(result, i);
-	  printer.createKML("results/testcase_" + ntest + "_client_" + String.valueOf(i) + ".kml");
+	  Visual printer = null;
+      if (TOLERANCE > 0) {
+        tl = "_tol";
+        printer = new Visual(result, i, "red");
+      }
+      else {
+        tl = "";
+        printer = new Visual(result, i, "green");
+      }
+	  printer.createKML("results/testcase_" + ntest + "_client_" + String.valueOf(i) + tl + ".kml");
 
   }
 
@@ -433,7 +449,9 @@ public class Graph {
 	 System.out.println("Running Testcases");
      File testDir = new File("../resources/data");
 	 int ncases = testDir.list().length;
-	 
+	 ArrayList<Double> tolerances = new ArrayList<Double>();
+     tolerances.add(0.0); // no tolerance
+     tolerances.add(0.01); // 10m tolerance
 	 try {
 		 ncases = Integer.parseInt(args[0]);
 	 }
@@ -457,12 +475,14 @@ public class Graph {
 		 String nodesFile = "../resources/data/" + i + "/nodes.csv";
 		 String clientsFile = "../resources/data/" + i + "/client.csv";
 		 String taxisFile = "../resources/data/" + i + "/taxis.csv";
-		 Graph G = new Graph(nodesFile, i);
-		 G.parseClientFile(clientsFile);
-		 G.parseTaxiFile(taxisFile);
-		 G.simulateRides();
-		 System.out.println("==============");
-
+		 for (double t: tolerances) {
+            System.out.println("Tolerance: " + t); 
+            Graph G = new Graph(nodesFile, i, t);
+		    G.parseClientFile(clientsFile);
+		    G.parseTaxiFile(taxisFile);
+		    G.simulateRides();
+		    System.out.println("==============");
+         }
 	 }
 
   }
