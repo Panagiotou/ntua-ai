@@ -2,16 +2,16 @@
 public class Estimator implements Comparable {
 	public Node from;
 	public double actual_distance;
-	public double heuristic_estimate;
+	public Pair heuristic_estimate;
 	
-	public Estimator(Node u, double g, double h) {
+	public Estimator(Node u, double g, Pair h) {
 		from = u;
 		actual_distance = g;
 		heuristic_estimate = h;
 	}
 	
 	public double getCost() {
-		return actual_distance + heuristic_estimate;
+		return actual_distance + heuristic_estimate.second;
 	}
 	
 	@Override
@@ -22,12 +22,16 @@ public class Estimator implements Comparable {
 		else if (getCost() < other.getCost()) return -1;
 		else return 1;
 	}
+
+	public int hashCode() {
+		return from.hashCode();
+	}
 	
 	public boolean equals(Object o) {
 		if (getClass() != o.getClass()) return false;
 		else {
 			Estimator tmp = (Estimator) o;
-			return getCost() == tmp.getCost() && from.equals(tmp.from);
+			return from.equals(tmp.from);
 		}
 	}
 }

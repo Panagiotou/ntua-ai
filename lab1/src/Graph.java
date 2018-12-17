@@ -10,6 +10,8 @@ import java.util.Stack;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.File;
+
 
 public class Graph {
   private ArrayList<Node> nodeList;
@@ -248,16 +250,20 @@ public class Graph {
 
   // Heuristic function
   public double h(Node s, Node t) {
-	  return 0.707 * s.haversine(t);
+	  return  s.haversine(t);
   }
 
   // h_total works for multiple goals taking the min of h(s, g_i)
-  public double h_total(Node s, HashSet<Node> goals) {
+  public Pair h_total(Node s, HashSet<Node> goals) {
 	  double result = Double.MAX_VALUE;
+	  Node argmin = null;
 	  for (Node t : goals) {
-		  if (h(s, t) < result) result = h(s, t);
+		  if (h(s, t) < result) {
+			  result = h(s, t);
+			  argmin = t;
+		  }
 	  }
-	  return result;
+	  return new Pair(argmin, result);
   }
 
   public void aStar(Node s, HashSet<Node> goals, int i) {
@@ -273,7 +279,8 @@ public class Graph {
 	  Hashtable<Node, Double> gScore = new Hashtable<Node, Double>();
 	  Hashtable<Node, Double> fScore = new Hashtable<Node, Double>();
 	  Hashtable<Node, ArrayList<Pair>> parent = new Hashtable<Node, ArrayList<Pair>>();
-
+	  Hashtable<Node, Node> towards = new Hashtable<Node, Node>();
+	  
 	  // Initializations
 	  for (Node n : nodeList) {
 		  gScore.put(n, Double.MAX_VALUE);
@@ -281,7 +288,7 @@ public class Graph {
 	  }
 	  // Initialize Estimators for starting node
 	  gScore.put(s, 0.0);
-	  fScore.put(s, h_total(s, goals));
+	  fScore.put(s, h_total(s, goals).second);
 	  Estimator current = null;
 	  ArrayList<Pair> tempArr = new ArrayList<Pair>();
 	  tempArr.add(new Pair(s, 0));
@@ -289,27 +296,43 @@ public class Graph {
 
 	  System.out.println("Starting point is " + s.printCoord());
 
+	  System.out.println("Equivalent Paths");
+	  
+	  Node correct = null;
+	  boolean flag = true;
+	  
 	  while (!frontier.isEmpty()) {
 		  current = frontier.remove();
 		  
 		  
 		  // Break if it finds a goal
 		  if (goals.contains(current.from)) {
+			  if (correct == null) { 
+				  correct = current.from;
+			  } else if (correct != null && current.from != correct) break;
+			  
 			  System.out.println("Goal found with cost from start " + gScore.get(current.from));
+			  System.out.println("Remaining frontier size: " + frontier.size());
+
 			  System.out.print("Goal coordinates " + current.from.printCoord());
 
 			  try {
-				  System.out.println(" which corresponds to taxi " + taxis.get(current.from));
+				  System.out.print(" which corresponds to taxi " + taxis.get(current.from));
+				  System.out.println(" and came from " + parent.get(current.from).get(parent.get(current.from).size() - 1).first.printCoord());
 
 			  } catch (NullPointerException e) {
 				  e.printStackTrace();
 			  } finally {
 				  System.out.println();
 			  }
-
-			  break;
+			  
+              break;  			  
 		  }
-
+		  
+		  if (correct != null && current.actual_distance > gScore.get(correct)) break;
+		  
+		  
+		  
 		  closedSet.add(current.from);
 		  
 
@@ -320,31 +343,40 @@ public class Graph {
 
 			  // relax edge
 			  double temp = gScore.get(current.from) + e.weight;
-			  if (temp > gScore.get(e.v)) continue;
 			  
+			  // Construct estimator for the next node
+			  // g[e.v] = g[current] + w
+			  // h[e.v] = min over all goals of h_i [e.v, g] (keep argmin as well)
+			  Estimator est = new Estimator(e.v, temp, h_total(e.v, goals));
+			  
+	
+			  // If the estimate is worse ignore it
+        	  if (temp > gScore.get(e.v)) continue;
+        	  // If it is not included in the frontier then it is the current best  
+        	  if (!frontier.contains(est)) {
+				  frontier.add(est);
+			  }
+         
+              // update parent
               
+              if (parent.get(e.v) == null) {
+                System.out.println("is o");
+                tempArr = new ArrayList<Pair>();
+                tempArr.add(new Pair(current.from, temp));      
+                parent.put(e.v, tempArr);
+              } else {
+                System.out.println("is more");
+                tempArr = parent.get(e.v);
+                tempArr.add(new Pair(current.from, temp));
+                parent.put(e.v, tempArr);
+              }
+              
+			  
 			  // update score
 			  gScore.put(e.v, temp);
-			  fScore.put(e.v, temp + h_total(e.v, goals));
+			  fScore.put(e.v, temp + h_total(e.v, goals).second);
+			  towards.put(e.v, h_total(e.v, goals).first);
 
-			  Estimator est = new Estimator(e.v, gScore.get(e.v), h_total(e.v, goals));
-
-			  closedSet.add(e.v);
-
-        // If it is not included in the frontier
-			  if (!frontier.contains(est)) {
-				  frontier.add(est);
-				  tempArr = new ArrayList<Pair>();
-				  tempArr.add(new Pair(current.from, temp));
-				  parent.put(e.v, tempArr);
-
-			  }
-        // If there is an estimate in the frontier
-			  else {
-				  tempArr = parent.get(e.v);
-				  tempArr.add(new Pair(current.from, temp));
-				  parent.put(e.v, tempArr);
-			  }
 
 		  }
 
@@ -354,23 +386,26 @@ public class Graph {
 
     // Create edges for all equivalent paths
 	  Queue<Node> q = new LinkedList<Node>();
-	  q.add(current.from);
+	  q.add(correct);
 
 	  closedSet.clear();
-	  closedSet.add(current.from);
+	  closedSet.add(correct);
 	  while (!q.isEmpty()) {
 		  Node u = q.remove();
+		  int cnt = 0;
 		  for (Pair pr : parent.get(u)) {
 			  ArrayList<Node> segment = new ArrayList<Node>();
-        // find optimal estimates
-			  if (!closedSet.contains(pr.first) && pr.second == gScore.get(u)) {
-				  segment.add(u);
+			  // find optimal estimates pr.second == gScore.get(u)
+			  if (!closedSet.contains(pr.first) && gScore.get(u) == pr.second  && towards.get(u) == correct) {
+				  cnt++;
+                  segment.add(u);
 				  segment.add(pr.first);
 				  result.add(segment);
 				  closedSet.add(pr.first);
 				  q.add(pr.first);
 			  }
 		  }
+		  if (cnt > 1) System.out.println("This is great");  
 
 	  }
 
@@ -394,8 +429,9 @@ public class Graph {
 
   public static void main(String[] args) {
 
-	 System.out.println("Running Testcases (defaults to 3 but can be provided as an argument)");
-	 int ncases = 3;
+	 System.out.println("Running Testcases");
+     File testDir = new File("../resources/data");
+	 int ncases = testDir.list().length;
 	 
 	 try {
 		 ncases = Integer.parseInt(args[0]);
@@ -406,8 +442,7 @@ public class Graph {
   		 System.exit(1);
   	 }
 	 catch (ArrayIndexOutOfBoundsException e) {
-		System.out.println("No ncases provided, defaults to 3"); 
-		ncases = 3; 
+		System.out.println("No ncases provided, defaults to " + String.valueOf(ncases)); 
 	 }
 	  
 	    
