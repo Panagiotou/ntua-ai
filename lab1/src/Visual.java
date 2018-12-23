@@ -22,7 +22,7 @@ public class Visual{
     this.color = colour;
   }
 
-  public String createPlacemark(ArrayList<Node> nodeList){
+  public String createPlacemark(ArrayList<Node> nodeList, int id){
     String nodeString = "";
     for(Node no: nodeList){
       if (! this.NodeSet.contains(no)){
@@ -30,7 +30,7 @@ public class Visual{
       }
     }
     String kmlPlacemark =   "\t\t<Placemark>\n" +
-                            "\t\t\t<name> Route " + String.valueOf(routeId) + " </name>\n"+
+                            "\t\t\t<name> Route " + id + " </name>\n"+
                             "\t\t\t<styleUrl>#" + color +  "</styleUrl>\n" +
                             "\t\t\t<LineString>\n" +
                             "\t\t\t\t<altitudeMode>relative</altitudeMode>\n" +
@@ -60,7 +60,7 @@ public class Visual{
 
         String kmlStyleRed  =   "\t\t<Style id=\"red\">\n" +
                                 "\t\t\t<LineStyle>\n" +
-                                "\t\t\t\t<color>ff000000</color>\n" +
+                                "\t\t\t\t<color>808080</color>\n" +
                                 "\t\t\t\t<width>10</width>\n" +
                                 "\t\t\t</LineStyle>\n" +
                                 "\t\t</Style>\n";
@@ -72,8 +72,10 @@ public class Visual{
         writer.write(kmlStart);
         writer.write(kmlStyleGreen);
         writer.write(kmlStyleRed);
+        int i = 0;
         for(ArrayList<Node> nolist: this.nodesListList){
-          writer.write(this.createPlacemark(nolist));
+          writer.write(this.createPlacemark(nolist, i));
+          i++;
         }
         writer.write(kmlEnd);
 

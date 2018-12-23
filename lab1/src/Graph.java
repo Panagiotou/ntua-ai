@@ -385,49 +385,62 @@ public class Graph {
 	  }
 
 	  ArrayList<ArrayList<Node>> result = new ArrayList<ArrayList<Node>>();
-
-    // Create edges for all equivalent paths
-	  Queue<Node> q = new LinkedList<Node>();
-	  q.add(correct);
+	  
+	  Node src = correct;
+	  Node dst = s;
+	  
+	  // Equivalent routes
+	  Queue<ArrayList<Node>> q = new LinkedList<ArrayList<Node>>();
+	  ArrayList<Node> path = new ArrayList<Node>();
+	  path.add(src);
+	  
+	  q.add(path);
 
 	  closedSet.clear();
 	  closedSet.add(correct);
+	  int npaths = 0;
+	  
 	  while (!q.isEmpty()) {
-		  Node u = q.remove();
-		  int cnt = 0;
+		  path = q.remove();
+		  Node u = path.get(path.size() - 1);
+		  
+		  if (u.equals(dst)) {
+			  npaths++;
+			  result.add(path);
+		  }
+		  
 		  for (Pair pr : parent.get(u)) {
-			  ArrayList<Node> segment = new ArrayList<Node>();
-			  // find optimal estimates pr.second == gScore.get(u)
               if (TOLERANCE > 0) {
                   flag = Math.abs(gScore.get(u) - pr.second) < TOLERANCE;
               }
               else {
                   flag = gScore.get(u) == pr.second;
               }
-			  if (!closedSet.contains(pr.first) && flag  && towards.get(u) == correct) {
-				  cnt++;
-                  segment.add(u);
-				  segment.add(pr.first);
-				  result.add(segment);
-				  closedSet.add(pr.first);
-				  q.add(pr.first);
+			  if (!path.contains(pr.first) && flag  && towards.get(u) == correct) {
+				  ArrayList<Node> newPath = new ArrayList<Node>(path);
+				  newPath.add(pr.first);
+				  q.add(newPath);				  
 			  }
 		  }
-          if (cnt > 1) System.out.println("This is great");
-
 	  }
 
-      String tl = null;
-    // Create KML
+	  System.out.println("Number of equivalent paths within tolerance " + TOLERANCE + " km" + npaths);
+	  
+	  // Create KML
+	  String tl = null;
+
 	  Visual printer = null;
-      if (TOLERANCE > 0) {
-        tl = "_tol";
-        printer = new Visual(result, i, "red");
-      }
-      else {
-        tl = "";
-        printer = new Visual(result, i, "green");
-      }
+	  if (TOLERANCE > 0) {
+		  tl = "_tol";
+		  printer = new Visual(result, i, "red");
+	  }
+	  else {
+		  tl = "";
+		  
+	  }
+	  
+	  printer = new Visual(result, i, "green");
+	  
 	  printer.createKML("results/testcase_" + ntest + "_client_" + String.valueOf(i) + tl + ".kml");
 
   }
@@ -450,8 +463,8 @@ public class Graph {
      File testDir = new File("../resources/data");
 	 int ncases = testDir.list().length;
 	 ArrayList<Double> tolerances = new ArrayList<Double>();
-     tolerances.add(0.0); // no tolerance
-     tolerances.add(0.01); // 10m tolerance
+//     tolerances.add(0.0); // no tolerance
+     tolerances.add(0.001); // 10m tolerance
 	 try {
 		 ncases = Integer.parseInt(args[0]);
 	 }
