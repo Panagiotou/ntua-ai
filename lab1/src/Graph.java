@@ -252,12 +252,14 @@ public class Graph {
 
   // Heuristic function
   public double h(Node s, Node t) {
-	  return  s.haversine(t);
+	  double lambda = 0.9;
+	  return  lambda * s.haversine(t);
   }
 
   // h_total works for multiple goals taking the min of h(s, g_i)
   public Pair h_total(Node s, HashSet<Node> goals) {
 	  double result = Double.MAX_VALUE;
+	  
 	  Node argmin = null;
 	  for (Node t : goals) {
 		  if (h(s, t) < result) {
@@ -424,7 +426,7 @@ public class Graph {
 		  }
 	  }
 
-	  System.out.println("Number of equivalent paths within tolerance " + TOLERANCE + " km" + npaths);
+	  System.out.println("Number of equivalent paths within tolerance " + TOLERANCE + " km: " + npaths);
 	  
 	  // Create KML
 	  String tl = null;
@@ -432,14 +434,13 @@ public class Graph {
 	  Visual printer = null;
 	  if (TOLERANCE > 0) {
 		  tl = "_tol";
-		  printer = new Visual(result, i, "red");
+		  printer = new Visual(result, "red");
 	  }
 	  else {
 		  tl = "";
-		  
+		  printer = new Visual(result, "green");
 	  }
 	  
-	  printer = new Visual(result, i, "green");
 	  
 	  printer.createKML("results/testcase_" + ntest + "_client_" + String.valueOf(i) + tl + ".kml");
 
@@ -463,7 +464,7 @@ public class Graph {
      File testDir = new File("../resources/data");
 	 int ncases = testDir.list().length;
 	 ArrayList<Double> tolerances = new ArrayList<Double>();
-//     tolerances.add(0.0); // no tolerance
+     tolerances.add(0.0); // no tolerance
      tolerances.add(0.001); // 10m tolerance
 	 try {
 		 ncases = Integer.parseInt(args[0]);

@@ -14,11 +14,10 @@ public class Visual{
   public int routeId;
   public String color;
 
-  public Visual(ArrayList<ArrayList<Node>> e, int routeid, String colour) {
+  public Visual(ArrayList<ArrayList<Node>> e, String colour) {
     this.nodesListList = e;
     Set<Node> N = new HashSet<>();
     this.NodeSet = N;
-    this.routeId = routeid;
     this.color = colour;
   }
 
@@ -31,7 +30,7 @@ public class Visual{
     }
     String kmlPlacemark =   "\t\t<Placemark>\n" +
                             "\t\t\t<name> Route " + id + " </name>\n"+
-                            "\t\t\t<styleUrl>#" + color +  "</styleUrl>\n" +
+                            "\t\t\t<styleUrl>#" + this.color +  "</styleUrl>\n" +
                             "\t\t\t<LineString>\n" +
                             "\t\t\t\t<altitudeMode>relative</altitudeMode>\n" +
                             "\t\t\t\t<coordinates>\n" +
@@ -60,7 +59,7 @@ public class Visual{
 
         String kmlStyleRed  =   "\t\t<Style id=\"red\">\n" +
                                 "\t\t\t<LineStyle>\n" +
-                                "\t\t\t\t<color>808080</color>\n" +
+                                "\t\t\t\t<color>ff0000ff</color>\n" +
                                 "\t\t\t\t<width>10</width>\n" +
                                 "\t\t\t</LineStyle>\n" +
                                 "\t\t</Style>\n";
