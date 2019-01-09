@@ -63,6 +63,19 @@ public class FactGenerator {
       return data;
   }
 
+  private ArrayList<String> pad(String[] f) {
+
+    ArrayList<String> temp = new ArrayList<String>();
+    for (int i = 0; i < f.length; i++) {
+        temp.add(f[i]);
+    }
+    for (int i = 0; i < maxlen - f.length; i++) {
+      temp.add(MASK);
+    }
+
+    return temp;
+  }
+
   // Parse file to extract facts
   private void parseFacts() {
     String line = "";
@@ -100,9 +113,9 @@ public class FactGenerator {
 
       int i = 0;
       for (String[] fact: facts) {
-        String joined = String.join(",", fact);
+        String joined = String.join(",", pad(fact));
         String result = null;
-        if (autoincrement) result = factName + "(" + joined + "," + i + ").\n";
+        if (autoincrement) result = factName + "(" + i + "," + joined + ").\n";
         else result = factName + "(" + joined + ").\n";
         writer.write(result);
         i++;
