@@ -44,7 +44,18 @@ public class FactGenerator {
 
   // String normalization
   public static String normalize(String x) {
-    return x.replaceAll(" |%","").toLowerCase();
+    if (x.contains(".")) return MASK;
+    return convertDelim(x.replaceAll(" |%","").toLowerCase(), "|");
+  }
+
+  public static String convertDelim(String x, String delim) {
+    if (x.contains(delim)) {
+      String replaced = x.replace(delim, ",");
+      return "[" + replaced + "]";
+    }
+    else {
+      return x;
+    }
   }
 
   // Checks if chars are pure ascii
@@ -56,11 +67,16 @@ public class FactGenerator {
   private String[] filterData(String[] data) {
       for (int i = 0; i < data.length; i++) {
         if (data[i].equals("")) data[i] = "nil";
-        if (!isPureAscii(data[i])) data[i] = MASK;
+        if (!isPureAscii(data[i]) && !isNumeric(data[i])) data[i] = MASK;
         data[i] = normalize(data[i]);
       }
 
       return data;
+  }
+
+  public static boolean isNumeric(String str)
+  {
+    return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
   }
 
   private ArrayList<String> pad(String[] f) {
@@ -147,7 +163,7 @@ public class FactGenerator {
     taxisFactGenerator.writeData("taxis.pl", false);
 
     FactGenerator clientFactGenerator = new FactGenerator("client", "../resources/data/0/client.csv");
-    clientFactGenerator.writeData("client.pl", false);
+    clientFactGenerator.writeData("client.pl", true);
 
     FactGenerator trafficFactGenerator = new FactGenerator("traffic", "../resources/data/0/traffic.csv");
     trafficFactGenerator.writeData("traffic.pl", false);

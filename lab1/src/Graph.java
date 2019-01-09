@@ -31,7 +31,7 @@ public class Graph {
 	  points = new HashSet<Point>();
 	  ntest = 0;
       TOLERANCE = 0;
-	  
+
   }
 
   public Graph(String nodesFile, int Ntest, double tol) {
@@ -67,11 +67,11 @@ public class Graph {
         Node no = new Node(Double.parseDouble(Coord[0]), Double.parseDouble(Coord[1]));
 
         no.numOfNeighbors = -1;
-        if (! NodeSet.contains(no)){
+        if (!NodeSet.contains(no)){
           NodeSet.add(no);
           nodes.add(no);
           //create pointMap (reverse of nodeMap)
-          if( pointMap.containsKey(po)){
+          if(pointMap.containsKey(po)){
             continue;
           }
           else{
@@ -259,7 +259,7 @@ public class Graph {
   // h_total works for multiple goals taking the min of h(s, g_i)
   public Pair h_total(Node s, HashSet<Node> goals) {
 	  double result = Double.MAX_VALUE;
-	  
+
 	  Node argmin = null;
 	  for (Node t : goals) {
 		  if (h(s, t) < result) {
@@ -284,7 +284,7 @@ public class Graph {
 	  Hashtable<Node, Double> fScore = new Hashtable<Node, Double>();
 	  Hashtable<Node, ArrayList<Pair>> parent = new Hashtable<Node, ArrayList<Pair>>();
 	  Hashtable<Node, Node> towards = new Hashtable<Node, Node>();
-	  
+
 	  // Initializations
 	  for (Node n : nodeList) {
 		  gScore.put(n, Double.MAX_VALUE);
@@ -301,20 +301,20 @@ public class Graph {
 	  System.out.println("Starting point is " + s.printCoord());
 
 	  System.out.println("Equivalent Paths");
-	  
+
 	  Node correct = null;
 	  boolean flag = true;
-	  
+
 	  while (!frontier.isEmpty()) {
 		  current = frontier.remove();
-		  
-		  
+
+
 		  // Break if it finds a goal
 		  if (goals.contains(current.from)) {
-			  if (correct == null) { 
+			  if (correct == null) {
 				  correct = current.from;
 			  } else if (correct != null && current.from != correct) break;
-			  
+
 			  System.out.println("Goal found with cost from start " + gScore.get(current.from));
 			  System.out.println("Remaining frontier size: " + frontier.size());
 
@@ -329,15 +329,15 @@ public class Graph {
 			  } finally {
 				  System.out.println();
 			  }
-			  
+
 		  }
-		  
+
 		  if (correct != null && current.actual_distance > gScore.get(correct)) break;
-		  
-		  
-		  
+
+
+
 		  closedSet.add(current.from);
-		  
+
 
 		  for (Edge e : current.from.adjacent) {
 			  // if it is visited
@@ -346,36 +346,36 @@ public class Graph {
 
 			  // relax edge
 			  double temp = gScore.get(current.from) + e.weight;
-			  
+
 			  // Construct estimator for the next node
 			  // g[e.v] = g[current] + w
 			  // h[e.v] = min over all goals of h_i [e.v, g] (keep argmin as well)
 			  Estimator est = new Estimator(e.v, temp, h_total(e.v, goals));
-			  
+
               if (frontier.contains(est) && temp > gScore.get(e.v)) continue;
-	
-        	  // If it is not included in the frontier then it is the current best  
+
+        	  // If it is not included in the frontier then it is the current best
               if (frontier.contains(est)) {
                   frontier.remove(est);
                   frontier.add(est);
               }
               else {
                   frontier.add(est);
-			  } 
-         
+			  }
+
               // update parent
-              
+
               if (parent.get(e.v) == null) {
                 tempArr = new ArrayList<Pair>();
-                tempArr.add(new Pair(current.from, temp));      
+                tempArr.add(new Pair(current.from, temp));
                 parent.put(e.v, tempArr);
               } else {
                 tempArr = parent.get(e.v);
                 tempArr.add(new Pair(current.from, temp));
                 parent.put(e.v, tempArr);
               }
-              
-			  
+
+
 			  // update score
 			  gScore.put(e.v, temp);
 			  fScore.put(e.v, temp + h_total(e.v, goals).second);
@@ -387,30 +387,30 @@ public class Graph {
 	  }
 
 	  ArrayList<ArrayList<Node>> result = new ArrayList<ArrayList<Node>>();
-	  
+
 	  Node src = correct;
 	  Node dst = s;
-	  
+
 	  // Equivalent routes
 	  Queue<ArrayList<Node>> q = new LinkedList<ArrayList<Node>>();
 	  ArrayList<Node> path = new ArrayList<Node>();
 	  path.add(src);
-	  
+
 	  q.add(path);
 
 	  closedSet.clear();
 	  closedSet.add(correct);
 	  int npaths = 0;
-	  
+
 	  while (!q.isEmpty()) {
 		  path = q.remove();
 		  Node u = path.get(path.size() - 1);
-		  
+
 		  if (u.equals(dst)) {
 			  npaths++;
 			  result.add(path);
 		  }
-		  
+
 		  for (Pair pr : parent.get(u)) {
               if (TOLERANCE > 0) {
                   flag = Math.abs(gScore.get(u) - pr.second) < TOLERANCE;
@@ -421,13 +421,13 @@ public class Graph {
 			  if (!path.contains(pr.first) && flag  && towards.get(u) == correct) {
 				  ArrayList<Node> newPath = new ArrayList<Node>(path);
 				  newPath.add(pr.first);
-				  q.add(newPath);				  
+				  q.add(newPath);
 			  }
 		  }
 	  }
 
 	  System.out.println("Number of equivalent paths within tolerance " + TOLERANCE + " km: " + npaths);
-	  
+
 	  // Create KML
 	  String tl = null;
 
@@ -440,8 +440,8 @@ public class Graph {
 		  tl = "";
 		  printer = new Visual(result, "green");
 	  }
-	  
-	  
+
+
 	  printer.createKML("results/testcase_" + ntest + "_client_" + String.valueOf(i) + tl + ".kml");
 
   }
@@ -475,22 +475,22 @@ public class Graph {
   		 System.exit(1);
   	 }
 	 catch (ArrayIndexOutOfBoundsException e) {
-		System.out.println("No ncases provided, defaults to " + String.valueOf(ncases)); 
+		System.out.println("No ncases provided, defaults to " + String.valueOf(ncases));
 	 }
-	  
-	    
+
+
 	    System.out.println("===============");
-		System.out.println("===Testcases==="); 
+		System.out.println("===Testcases===");
 	    System.out.println("===============");
-	 
-	  
+
+
 	 for (int i = 0; i < ncases; i++) {
 		 System.out.println("Testcase #" + i);
 		 String nodesFile = "../resources/data/" + i + "/nodes.csv";
 		 String clientsFile = "../resources/data/" + i + "/client.csv";
 		 String taxisFile = "../resources/data/" + i + "/taxis.csv";
 		 for (double t: tolerances) {
-            System.out.println("Tolerance: " + t); 
+            System.out.println("Tolerance: " + t);
             Graph G = new Graph(nodesFile, i, t);
 		    G.parseClientFile(clientsFile);
 		    G.parseTaxiFile(taxisFile);

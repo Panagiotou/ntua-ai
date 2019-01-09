@@ -6,6 +6,10 @@ generate:
 	$(JAVAC) FactGenerator.java
 	$(JAVA) FactGenerator
 
+wrapper:
+	$(JAVAC) Prolog.java
+	$(JAVA) Prolog
+
 run:
 	$(JAVAC) Graph.java
 	$(JAVA) Graph
