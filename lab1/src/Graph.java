@@ -30,7 +30,7 @@ public class Graph {
 	  taxis = new Hashtable<Node, Integer>();
 	  points = new HashSet<Point>();
 	  ntest = 0;
-      TOLERANCE = 0;
+    TOLERANCE = 0;
 
   }
 

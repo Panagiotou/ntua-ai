@@ -6,10 +6,10 @@ public class Edge {
 	public int name;
 
 	public Edge(Node from, Node to, int roadId) {
-            u = from;
-            v = to;
-            name = roadId;
-            weight = u.haversine(v);
+    u = from;
+    v = to;
+    name = roadId;
+    weight = u.haversine(v);
 	}
 
 	public void printEdge() {

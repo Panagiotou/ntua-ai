@@ -44,7 +44,7 @@ public class FactGenerator {
 
   // String normalization
   public static String normalize(String x) {
-    if (x.contains(".")) return MASK;
+    if (x.contains("www")) return MASK;
     return convertDelim(x.replaceAll(" |%","").toLowerCase(), "|");
   }
 
