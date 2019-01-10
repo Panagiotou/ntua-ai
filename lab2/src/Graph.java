@@ -1,18 +1,21 @@
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.LinkedList;
 import java.util.Hashtable;
 import java.util.Stack;
+import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.File;
 import java.io.IOException;
 import com.ugos.jiprolog.engine.JIPSyntaxErrorException;
+import java.util.Iterator;
 
 
 public class Graph {
@@ -24,6 +27,8 @@ public class Graph {
   private Set<Integer> nodeKeys;
   private Hashtable<Node, Integer> taxis;
   private Hashtable<Integer, Node> taxisInverse;
+  private Hashtable<Integer, Double> taxiClientDist;
+  private TreeMap<Double, Integer> distTaxi;
 
   public Graph(int Ntest, double tol, String world) throws IOException, JIPSyntaxErrorException {
     // creates graph topology
@@ -39,6 +44,8 @@ public class Graph {
     Set<Node> taxiKeys = taxis.keySet();
 
     taxisInverse = new Hashtable<Integer, Node>();
+    taxiClientDist = new Hashtable<Integer, Double>();
+    distTaxi= new TreeMap<Double, Integer>();
     for (Node t: taxiKeys) {
       Integer id = taxis.get(t);
       taxisInverse.put(id, t);
@@ -114,6 +121,9 @@ public class Graph {
         } else if (correct != null && current.from != correct) break;
 
         System.out.println("Goal found with cost from start " + gScore.get(current.from));
+        // add it to taxiClientDist hashtable
+        taxiClientDist.put(i, gScore.get(current.from));
+        distTaxi.put(gScore.get(current.from), i);
         System.out.println("Remaining frontier size: " + frontier.size());
 
         System.out.print("Goal coordinates " + current.from.toString());
@@ -127,8 +137,6 @@ public class Graph {
         } finally {
           System.out.println();
         }
-
-        break;
       }
 
       if (correct != null && current.actual_distance > gScore.get(correct)) break;
@@ -256,15 +264,40 @@ public class Graph {
     System.out.println("Available taxis to serve");
     ArrayList<Integer> availableTaxis = pl.getGoals(client.clientId);
     System.out.println(availableTaxis.toString());
-
+    HashSet<Node> goals = new HashSet<Node>();
+    Integer topk = 5;
     // Show ranks
     for (Integer availableTaxiId: availableTaxis) {
-      HashSet<Node> goals = new HashSet<Node>();
       Node taxi = taxisInverse.get(availableTaxiId);
       goals.add(taxi);
       aStar(client.source , goals, availableTaxiId);
     }
 
+    // Display topk elements in ascending astar-score order
+    Integer[] topTaxis = new Integer[topk];
+    int j=0;
+    System.out.println("Please choose one of the following available taxis:");
+    for (Map.Entry<Double, Integer> entry : distTaxi.entrySet()) {
+        if(j == topk){
+          break;
+        }
+        Integer id = entry.getValue();
+        Double cost = entry.getKey();
+        topTaxis[j] = id;
+        System.out.println("Taxi " + String.valueOf(j) + " is " + String.valueOf(cost) + " km away form you.");
+        j++;
+    }
+    Scanner in = new Scanner(System.in);
+    int chosenid = topTaxis[in.nextInt()];
+    Double chosenCost = taxiClientDist.get(chosenid);
+    // Final aStar to get source - dest result
+    HashSet<Node> destination = new HashSet<Node>();
+    destination.add(client.dest);
+    aStar(client.source , destination, -100);
+    // get client source - dest distance
+    Double routeCost = taxiClientDist.get(-100);
+
+    Double totalCost = chosenCost + routeCost;
   }
 
 

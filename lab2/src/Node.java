@@ -42,6 +42,9 @@ public class Node{
 
     }
   }
+  String printCoord(){
+    return "Node (x,y) = ("+String.valueOf(x) +","+ String.valueOf(y)  +")";
+  }
   public void printNode(){
     System.out.println("Node (x,y) = ("+String.valueOf(x) +","+ String.valueOf(y)  +")");
     if( !adjacent.isEmpty()){
