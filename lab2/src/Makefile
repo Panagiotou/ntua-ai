@@ -2,6 +2,10 @@ FLAGS=-cp jipconsole.jar
 JAVAC=javac $(FLAGS)
 JAVA=java $(FLAGS)
 
+all: 
+	$(MAKE) generate
+	$(MAKE) run
+
 generate:
 	$(JAVAC) FactGenerator.java
 	$(JAVA) FactGenerator
