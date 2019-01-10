@@ -1,7 +1,15 @@
-public class Client extends Point {
-	private int id;
+public class Client  {
+	public Node source, dest;
+	public int clientId;
 
-  public void setid(int nid){
-      id = nid;
-  }
+	public Client(int id, Node s, Node t) {
+		source = s;
+		dest = t;
+		clientId = id;
+	}
+
+	public String toString() {
+		return "Client: " + clientId + " From:" + source.toString() + " Dest: "  + dest.toString();
+	}
+
 }

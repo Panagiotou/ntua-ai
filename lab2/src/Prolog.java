@@ -5,11 +5,12 @@ import com.ugos.jiprolog.engine.JIPSyntaxErrorException;
 import com.ugos.jiprolog.engine.JIPTerm;
 import com.ugos.jiprolog.engine.JIPTermParser;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 
 public class Prolog {
   private JIPEngine jip;
-  private JIPQuery jipQuery;
+
   private JIPTerm term;
   private JIPTermParser parser;
 
@@ -20,20 +21,22 @@ public class Prolog {
   }
 
   // Get taxis (goals) for a certain client
-  public ArrayList<Integer> goals(int clientId) {
-		jipQuery = jip.openSynchronousQuery(parser.parseTerm("goal(" + clientId + ", G)"));
-    term = jipQuery.nextSolution();
+  public ArrayList<Integer> getGoals(int clientId) {
+		JIPQuery jipQuery = jip.openSynchronousQuery(parser.parseTerm("goal(" + clientId + ", G)"));
     ArrayList<Integer> result = new ArrayList<Integer>();
+    term = jipQuery.nextSolution();
     while (term != null) {
       int resId = Integer.parseInt(term.getVariablesTable().get("G").toString());
       term = jipQuery.nextSolution();
       result.add(resId);
+
     }
     return result;
   }
 
   // Get adjacent nodes according to a certain client (avoiding high traffic)
-  public ArrayList<Edge> next(Node u, boolean avoidTraffic, int clientId) {
+  public ArrayList<Edge> getNext(Node u, boolean avoidTraffic, int clientId) {
+    JIPQuery jipQuery = null;
     if (avoidTraffic) {
       jipQuery = jip.openSynchronousQuery(parser.parseTerm("nextAvoidingTraffic(" + u.x + "," + u.y + ", X, Y, " + clientId + ", [high])"));
 
@@ -56,7 +59,7 @@ public class Prolog {
 
   // Closest point to place taxi or client
   public Node closestPoint(Node u) {
-    jipQuery = jip.openSynchronousQuery(parser.parseTerm("getPoint(I, X, Y)"));
+    JIPQuery jipQuery =jip.openSynchronousQuery(parser.parseTerm("getPoint(I, X, Y)"));
     term = jipQuery.nextSolution();
     double min = Double.MAX_VALUE;
     Node argmin = null;
@@ -76,17 +79,69 @@ public class Prolog {
     return argmin;
   }
 
+  // Get points to hashtable
+  public Hashtable<Integer, Node> getNodes() {
+    Hashtable<Integer, Node> points = new Hashtable<Integer, Node>();
+    JIPQuery jipQuery =jip.openSynchronousQuery(parser.parseTerm("getPoint(I, X, Y)"));
+    term = jipQuery.nextSolution();
 
+    while (term != null) {
+      int id = Integer.parseInt(term.getVariablesTable().get("I").toString());
+      double x = Double.parseDouble(term.getVariablesTable().get("X").toString());
+      double y = Double.parseDouble(term.getVariablesTable().get("Y").toString());
+      Node n = new Node(x, y);
+      points.put(id, n);
+      term = jipQuery.nextSolution();
+    }
 
-  public static void main(String[] args) throws JIPSyntaxErrorException, IOException {
-    Prolog pl = new Prolog("world.pl");
-
-      Node u = new Node(23.7614542,37.9864972);
-      ArrayList<Edge> l = pl.next(u, true, 0);
-      System.out.println(l.toString());
-
-
-
+    return points;
   }
+
+  // Get taxis to hashtable
+  public Hashtable<Node, Integer> getTaxis() {
+    Hashtable<Node, Integer> points = new Hashtable<Node, Integer>();
+    JIPQuery jipQuery =jip.openSynchronousQuery(parser.parseTerm("getTaxi(I, X, Y)"));
+    term = jipQuery.nextSolution();
+
+    while (term != null) {
+      int id = Integer.parseInt(term.getVariablesTable().get("I").toString());
+      double x = Double.parseDouble(term.getVariablesTable().get("X").toString());
+      double y = Double.parseDouble(term.getVariablesTable().get("Y").toString());
+      Node n = new Node(x, y);
+      Node closest = closestPoint(n);
+      points.put(closest, id);
+      term = jipQuery.nextSolution();
+    }
+
+    return points;
+  }
+
+
+  // Get all clients
+  public ArrayList<Client> getClients() {
+    ArrayList<Client> clients = new ArrayList<Client>();
+
+    JIPQuery jipQuery =jip.openSynchronousQuery(parser.parseTerm("getClient(I, X, Y, U, V)"));
+    term = jipQuery.nextSolution();
+
+    while (term != null) {
+      int id = Integer.parseInt(term.getVariablesTable().get("I").toString());
+      double x = Double.parseDouble(term.getVariablesTable().get("X").toString());
+      double y = Double.parseDouble(term.getVariablesTable().get("Y").toString());
+      double u = Double.parseDouble(term.getVariablesTable().get("U").toString());
+      double v = Double.parseDouble(term.getVariablesTable().get("V").toString());
+      Node src = new Node(x, y);
+      Node closest_src = closestPoint(src);
+      Node dest = new Node(u, v);
+      Node closest_dest = closestPoint(dest);
+      Client client = new Client(id, closest_src, closest_dest);
+      clients.add(client);
+      term = jipQuery.nextSolution();
+    }
+
+    return clients;
+  }
+
+
 
 }

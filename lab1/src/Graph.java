@@ -36,7 +36,7 @@ public class Graph {
 
   public Graph(String nodesFile, int Ntest, double tol) {
     // creates graph topology
-	ntest = Ntest;
+	   ntest = Ntest;
     Hashtable<Node, ArrayList<Point>> nodeMap = new Hashtable<Node,ArrayList<Point>>();
     Hashtable<Point, Node> pointMap = new Hashtable<Point, Node>();
     TOLERANCE = tol;
