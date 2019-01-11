@@ -28,6 +28,8 @@ public class Graph {
   private Hashtable<Node, Integer> taxis;
   private Hashtable<Integer, Node> taxisInverse;
   private Hashtable<Integer, Double> taxiClientDist;
+  private Hashtable<Node, ArrayList<Edge>> adjacencyList;
+  private  ArrayList<ArrayList<ArrayList<Node>>> allKmls;
 
   public Graph(int Ntest, double tol, String world) throws IOException, JIPSyntaxErrorException {
     // creates graph topology
@@ -44,6 +46,7 @@ public class Graph {
 
     taxisInverse = new Hashtable<Integer, Node>();
     taxiClientDist = new Hashtable<Integer, Double>();
+    adjacencyList = new Hashtable<Node, ArrayList<Edge>>();
     for (Node t: taxiKeys) {
       Integer id = taxis.get(t);
       taxisInverse.put(id, t);
@@ -102,9 +105,9 @@ public class Graph {
     tempArr.add(new Pair(s, 0));
     parent.put(s, tempArr);
 
-    System.out.println("Starting point is " + s.toString());
+    //System.out.println("Starting point is " + s.toString());
 
-    System.out.println("Equivalent Paths");
+    //System.out.println("Equivalent Paths");
 
     Node correct = null;
     boolean flag = true;
@@ -118,31 +121,36 @@ public class Graph {
           correct = current.from;
         } else if (correct != null && current.from != correct) break;
 
-        System.out.println("Goal found with cost from start " + gScore.get(current.from));
+        //System.out.println("Goal found with cost from start " + gScore.get(current.from));
         // add it to taxiClientDist hashtable
         taxiClientDist.put(i, gScore.get(current.from));
-        System.out.println("Remaining frontier size: " + frontier.size());
+        //System.out.println("Remaining frontier size: " + frontier.size());
 
-        System.out.print("Goal coordinates " + current.from.toString());
+        //System.out.print("Goal coordinates " + current.from.toString());
 
         try {
-          System.out.print(" which corresponds to taxi " + taxis.get(current.from));
-          System.out.println(" and came from " + parent.get(current.from).get(parent.get(current.from).size() - 1).first.toString());
+          //System.out.print(" which corresponds to taxi " + taxis.get(current.from));
+          //System.out.println(" and came from " + parent.get(current.from).get(parent.get(current.from).size() - 1).first.toString());
 
         } catch (NullPointerException e) {
           e.printStackTrace();
         } finally {
           System.out.println();
         }
-
-        return correct;
+        break;
       }
 
       if (correct != null && current.actual_distance > gScore.get(correct)) break;
 
-      closedSet.add(current.from);
+      ArrayList<Edge> adjacent = null;
+      if (adjacencyList.contains(current.from)) {
+      adjacent = adjacencyList.get(current.from);
+      }
+      else {
+      adjacent = pl.getNext(current.from, false, 0);
+      adjacencyList.put(current.from, adjacent);
+      }
 
-      ArrayList<Edge> adjacent = pl.getNext(current.from, false, 0);
 
       for (Edge e : adjacent) {
         // System.out.println("Edge" + e.toString());
@@ -232,8 +240,9 @@ public class Graph {
       }
     }
 
-    System.out.println("Number of equivalent paths within tolerance " + TOLERANCE + " km: " + npaths);
+    //System.out.println("Number of equivalent paths within tolerance " + TOLERANCE + " km: " + npaths);
 
+    /*
     // Create KML
     String tl = null;
 
@@ -249,7 +258,9 @@ public class Graph {
 
 
     printer.createKML("results/testcase_" + ntest + "_client_" + String.valueOf(i) + tl + ".kml");
-            return correct;
+    */
+    allKmls.add(result);
+    return correct;
   }
 
   public void simulateRides(Integer topk) {
@@ -257,7 +268,7 @@ public class Graph {
 
   }
 
-  public void simulateClient(Client client, Integer topk) throws NullPointerException {
+  public void simulateClient(Client client, Integer topk) {
     System.out.println("Serving client: " + client.toString());
 
     System.out.println("Available taxis to serve");
@@ -290,6 +301,25 @@ public class Graph {
     Double routeCost = taxiClientDist.get(-100);
 
     Double totalCost = chosenCost + routeCost;
+    int level = 0;
+    for (ArrayList<ArrayList<Node>> path : allKmls) {
+      // Create KML
+      String tl = null;
+
+      Visual printer = null;
+      if (TOLERANCE > 0) {
+        tl = "_tol";
+        printer = new Visual(path, "red");
+      }
+      else {
+        tl = "";
+        printer = new Visual(path, "green");
+      }
+      printer.createKML("results/level" + String.valueOf(level)  + tl + ".kml");
+      level++;
+    }
+    // biggest level kml is the source destination route.
+    System.out.println("Total route length is " + String.valueOf(totalCost) + " km.");
   }
 
 
