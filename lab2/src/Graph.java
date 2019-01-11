@@ -28,7 +28,6 @@ public class Graph {
   private Hashtable<Node, Integer> taxis;
   private Hashtable<Integer, Node> taxisInverse;
   private Hashtable<Integer, Double> taxiClientDist;
-  private TreeMap<Double, Integer> distTaxi;
 
   public Graph(int Ntest, double tol, String world) throws IOException, JIPSyntaxErrorException {
     // creates graph topology
@@ -45,7 +44,6 @@ public class Graph {
 
     taxisInverse = new Hashtable<Integer, Node>();
     taxiClientDist = new Hashtable<Integer, Double>();
-    distTaxi= new TreeMap<Double, Integer>();
     for (Node t: taxiKeys) {
       Integer id = taxis.get(t);
       taxisInverse.put(id, t);
@@ -74,7 +72,7 @@ public class Graph {
     return new Pair(argmin, result);
   }
 
-  public void aStar(Node s, HashSet<Node> goals, int i) {
+  public Node aStar(Node s, HashSet<Node> goals, int i) {
     // Closed set
     HashSet<Node> closedSet = new HashSet<Node>();
 
@@ -123,7 +121,6 @@ public class Graph {
         System.out.println("Goal found with cost from start " + gScore.get(current.from));
         // add it to taxiClientDist hashtable
         taxiClientDist.put(i, gScore.get(current.from));
-        distTaxi.put(gScore.get(current.from), i);
         System.out.println("Remaining frontier size: " + frontier.size());
 
         System.out.print("Goal coordinates " + current.from.toString());
@@ -137,6 +134,8 @@ public class Graph {
         } finally {
           System.out.println();
         }
+
+        return correct;
       }
 
       if (correct != null && current.actual_distance > gScore.get(correct)) break;
@@ -250,46 +249,39 @@ public class Graph {
 
 
     printer.createKML("results/testcase_" + ntest + "_client_" + String.valueOf(i) + tl + ".kml");
+            return correct;
+  }
+
+  public void simulateRides(Integer topk) {
+    for (Client client: clients) simulateClient(client, topk);
 
   }
 
-  public void simulateRides() {
-    for (Client client: clients) simulateClient(client);
-
-  }
-
-  public void simulateClient(Client client) throws NullPointerException {
+  public void simulateClient(Client client, Integer topk) throws NullPointerException {
     System.out.println("Serving client: " + client.toString());
 
     System.out.println("Available taxis to serve");
     ArrayList<Integer> availableTaxis = pl.getGoals(client.clientId);
     System.out.println(availableTaxis.toString());
     HashSet<Node> goals = new HashSet<Node>();
-    Integer topk = 5;
     // Show ranks
     for (Integer availableTaxiId: availableTaxis) {
       Node taxi = taxisInverse.get(availableTaxiId);
       goals.add(taxi);
-      aStar(client.source , goals, availableTaxiId);
     }
-
-    // Display topk elements in ascending astar-score order
-    Integer[] topTaxis = new Integer[topk];
-    int j=0;
-    System.out.println("Please choose one of the following available taxis:");
-    for (Map.Entry<Double, Integer> entry : distTaxi.entrySet()) {
-        if(j == topk){
-          break;
-        }
-        Integer id = entry.getValue();
-        Double cost = entry.getKey();
-        topTaxis[j] = id;
-        System.out.println("Taxi " + String.valueOf(j) + " is " + String.valueOf(cost) + " km away form you.");
-        j++;
+    Hashtable<Integer, Integer> iToId = new Hashtable<Integer, Integer>(); // maps i to taxiId
+    System.out.println("Please choose 1 out of the " + String.valueOf(topk) + " following available taxis:");
+    for(int i=1; i <= topk; i++){
+       Node solution = aStar(client.source , goals, i);
+       goals.remove(solution);
+       iToId.put(i, taxis.get(solution));// map current i to solutions taxi id
+       System.out.println("Taxi " + String.valueOf(i) + " is " + String.valueOf(taxiClientDist.get(i)) + " km away from you.");
     }
     Scanner in = new Scanner(System.in);
-    int chosenid = topTaxis[in.nextInt()];
-    Double chosenCost = taxiClientDist.get(chosenid);
+    Integer choice = in.nextInt();
+    int chosenid = iToId.get(choice);// get taxi Id from i chosen by client
+    Node chosenTaxi = taxisInverse.get(chosenid);
+    Double chosenCost = taxiClientDist.get(choice); // we call this with i, because astar is called with i and not ID
     // Final aStar to get source - dest result
     HashSet<Node> destination = new HashSet<Node>();
     destination.add(client.dest);
@@ -327,7 +319,7 @@ public class Graph {
       for (double t: tolerances) {
         G.TOLERANCE = t;
         System.out.println("Tolerance: " + t);
-        G.simulateRides();
+        G.simulateRides(5);
       }
     }
 
