@@ -32,12 +32,14 @@ public class FactGenerator {
   public ArrayList<String[]> facts;
   private static final String MASK = "mask";
   private int maxlen;
+  public int cutlen;
 
   public FactGenerator(String faName, String fName) {
       factName = faName;
       filename = fName;
       facts = new ArrayList<String[]>();
       maxlen = 0;
+      cutlen = -1;
       parseFacts();
 
   }
@@ -82,11 +84,18 @@ public class FactGenerator {
   private ArrayList<String> pad(String[] f) {
 
     ArrayList<String> temp = new ArrayList<String>();
-    for (int i = 0; i < f.length; i++) {
+    if (cutlen == -1) {
+      for (int i = 0; i < f.length; i++) {
         temp.add(f[i]);
-    }
-    for (int i = 0; i < maxlen - f.length - 1; i++) {
-      temp.add(MASK);
+      }
+      for (int i = 0; i < maxlen - f.length; i++) {
+        temp.add(MASK);
+      }
+    } else {
+      for (int i = 0; i < cutlen; i++) {
+        temp.add(f[i]);
+      }
+
     }
 
     return temp;
@@ -178,6 +187,7 @@ public class FactGenerator {
   public static void main(String[] argv) {
     // Extract .pl files for all files of the assignment
     FactGenerator nodesFactGenerator = new FactGenerator("nodes", "../resources/data/0/nodes.csv");
+    nodesFactGenerator.cutlen = 3;
     nodesFactGenerator.writeData("nodes.pl", true);
 
     FactGenerator linesFactGenerator = new FactGenerator("lines", "../resources/data/0/lines.csv");

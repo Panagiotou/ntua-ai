@@ -17,9 +17,6 @@ public class Prolog {
   public Prolog(String db) throws JIPSyntaxErrorException, IOException {
     jip = new JIPEngine();
     jip.consultFile(db);
-    jip.consultFile("facts.pl");
-
-
 		parser = jip.getTermParser();
   }
 

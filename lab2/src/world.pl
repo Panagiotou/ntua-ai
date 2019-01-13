@@ -1,6 +1,12 @@
+:- [
+  nodes,
+  lines,
+  client,
+  taxis].
+
 % Node belongs to line L
 belongsTo(X, Y, L) :-
-  nodes(_, X, Y, L, _, _, _, _).
+  nodes(_, X, Y, L).
 
 % Line is directed same as nodes
 directed(L) :-
@@ -14,7 +20,6 @@ oppositeDirected(L) :-
 undirected(L) :-
   lineDirection(L, no).
 
-
 % Computes A = |Y - X|
 abs(X, Y, A) :-
   (
@@ -26,13 +31,13 @@ abs(X, Y, A) :-
 
 % Get adjacent nodes based on graph
 nextWithLine(X, Y, U, V, L) :-
-  nodes(I, X, Y, L, _, _, _, _),
+  nodes(I, X, Y, L),
   (
   directed(L) -> J is I + 1;
   oppositeDirected(L) -> J is I - 1;
   abs(J, I, 1)
   ),
-  nodes(J, U, V, L, _, _, _, _).
+  nodes(J, U, V, L).
 
 % Next without line
 next(X, Y, U, V) :- nextWithLine(X, Y, U, V, _).
@@ -98,6 +103,6 @@ fitsLuggage(Type, Luggage) :-
   ).
 
 % Default getters
-getPoint(I, U, V) :- nodes(I, U, V, _, _, _, _, _).
+getPoint(I, U, V) :- nodes(I, U, V, _).
 getClient(I, X, Y, U, V) :- client(I, X, Y, U, V,_, _, _, _).
 getTaxi(I, U, V) :-   taxis(U, V, I, _, _, _, _, _, _, _).
