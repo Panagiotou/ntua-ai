@@ -17,6 +17,9 @@ public class Prolog {
   public Prolog(String db) throws JIPSyntaxErrorException, IOException {
     jip = new JIPEngine();
     jip.consultFile(db);
+    jip.consultFile("facts.pl");
+
+
 		parser = jip.getTermParser();
   }
 
@@ -116,7 +119,6 @@ public class Prolog {
     return points;
   }
 
-
   // Get all clients
   public ArrayList<Client> getClients() {
     ArrayList<Client> clients = new ArrayList<Client>();
@@ -140,6 +142,17 @@ public class Prolog {
     }
 
     return clients;
+  }
+
+  public static void main(String[] argv) throws IOException, JIPSyntaxErrorException {
+    Prolog p = new Prolog("world.pl");
+    Node u = new Node(23.7614542,37.9864972);
+    while (true) {
+      System.out.println(p.getNext(u, false, 0));
+
+    }
+
+
   }
 
 

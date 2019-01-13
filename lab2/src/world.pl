@@ -1,25 +1,19 @@
-% Global Imports
-:- [nodes,
-    lines,
-    client,
-    taxis,
-    traffic].
-
 % Node belongs to line L
 belongsTo(X, Y, L) :-
   nodes(_, X, Y, L, _, _, _, _).
 
 % Line is directed same as nodes
 directed(L) :-
-  lines(L, _, _, yes, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _).
+  lineDirection(L, yes).
 
 % True when line is directed opposite
 oppositeDirected(L) :-
-  lines(L, _, _, -1, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _).
+  lineDirection(L, -1).
 
 % True when line is undirected
 undirected(L) :-
-  lines(L, _, _, no, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _).
+  lineDirection(L, no).
+
 
 % Computes A = |Y - X|
 abs(X, Y, A) :-

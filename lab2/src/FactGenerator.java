@@ -66,7 +66,7 @@ public class FactGenerator {
   // Filters the array of data
   private String[] filterData(String[] data) {
       for (int i = 0; i < data.length; i++) {
-        if (data[i].equals("")) data[i] = "nil";
+        if (data[i].equals("")) data[i] = MASK;
         if (!isPureAscii(data[i]) && !isNumeric(data[i])) data[i] = MASK;
         data[i] = normalize(data[i]);
       }
@@ -85,7 +85,7 @@ public class FactGenerator {
     for (int i = 0; i < f.length; i++) {
         temp.add(f[i]);
     }
-    for (int i = 0; i < maxlen - f.length; i++) {
+    for (int i = 0; i < maxlen - f.length - 1; i++) {
       temp.add(MASK);
     }
 
@@ -150,6 +150,30 @@ public class FactGenerator {
     }
   }
 
+  // Write Prolog File
+  public void writeLineDirectionData(String outfile) {
+    Writer writer = null;
+    try {
+      writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outfile), "utf-8"));
+
+      int i = 0;
+      for (String[] fact: facts) {
+        String result = "lineDirection" + "(" + fact[0] + "," + fact[3] + ").\n";
+        writer.write(result);
+      }
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        writer.close();
+      }
+      catch (Exception ex) {
+        ex.printStackTrace();
+      }
+
+    }
+  }
 
   public static void main(String[] argv) {
     // Extract .pl files for all files of the assignment
@@ -157,7 +181,8 @@ public class FactGenerator {
     nodesFactGenerator.writeData("nodes.pl", true);
 
     FactGenerator linesFactGenerator = new FactGenerator("lines", "../resources/data/0/lines.csv");
-    linesFactGenerator.writeData("lines.pl", false);
+    // linesFactGenerator.writeData("lines.pl", false);
+    linesFactGenerator.writeLineDirectionData("lines.pl");
 
     FactGenerator taxisFactGenerator = new FactGenerator("taxis", "../resources/data/0/taxis.csv");
     taxisFactGenerator.writeData("taxis.pl", false);
