@@ -6,6 +6,8 @@ import com.ugos.jiprolog.engine.JIPTerm;
 import com.ugos.jiprolog.engine.JIPTermParser;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Set;
+import java.util.HashSet;
 
 
 public class Prolog {
@@ -59,7 +61,7 @@ public class Prolog {
 
   // Closest point to place taxi or client
   public Node closestPoint(Node u) {
-    JIPQuery jipQuery =jip.openSynchronousQuery(parser.parseTerm("getPoint(I, X, Y)"));
+    JIPQuery jipQuery = jip.openSynchronousQuery(parser.parseTerm("getPoint(X, Y)"));
     term = jipQuery.nextSolution();
     double min = Double.MAX_VALUE;
     Node argmin = null;
@@ -80,20 +82,23 @@ public class Prolog {
   }
 
   // Get points to hashtable
-  public Hashtable<Integer, Node> getNodes() {
-    Hashtable<Integer, Node> points = new Hashtable<Integer, Node>();
-    JIPQuery jipQuery =jip.openSynchronousQuery(parser.parseTerm("getPoint(I, X, Y)"));
+  public HashSet<Node> getNodes() {
+    HashSet<Node> points = new HashSet<Node>();
+    JIPQuery jipQuery =jip.openSynchronousQuery(parser.parseTerm("getPoint(X, Y)"));
     term = jipQuery.nextSolution();
-
+    int i = 0;
     while (term != null) {
-      int id = Integer.parseInt(term.getVariablesTable().get("I").toString());
       double x = Double.parseDouble(term.getVariablesTable().get("X").toString());
       double y = Double.parseDouble(term.getVariablesTable().get("Y").toString());
       Node n = new Node(x, y);
-      points.put(id, n);
+      if (!points.contains(n)) {
+        i++;
+        points.add(n);
+      }
       term = jipQuery.nextSolution();
     }
 
+    System.out.println(i);
     return points;
   }
 
@@ -143,12 +148,8 @@ public class Prolog {
 
   public static void main(String[] argv) throws IOException, JIPSyntaxErrorException {
     Prolog p = new Prolog("world.pl");
-    Node u = new Node(23.7614542,37.9864972);
-    while (true) {
-      System.out.println(p.getNext(u, false, 0));
-
-    }
-
+    System.out.println("Get");
+    p.getNodes();
 
   }
 

@@ -184,6 +184,71 @@ public class FactGenerator {
     }
   }
 
+  public void writeNext(String outfile, FactGenerator lines) {
+    Hashtable<Integer, String> directions = new Hashtable<Integer, String>();
+
+    for (String[] fact: lines.facts) {
+      directions.put(Integer.parseInt(fact[0]), fact[3]);
+    }
+
+    Writer writer = null;
+    try {
+      writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outfile), "utf-8"));
+      for (int i = 0; i < facts.size(); i++) {
+        String[] node = facts.get(i);
+        int lineid = Integer.parseInt(node[2]);
+        String dir = directions.get(lineid);
+        int j = i;
+        String fact = null;
+        if (dir.equals("yes") && i < facts.size() - 1) {
+          String[] next = facts.get(i + 1);
+          int nextlineid = Integer.parseInt(next[2]);
+          if (nextlineid != lineid) continue;
+          fact = "nextWithLine(" + node[0] + "," + node[1] + "," + next[0] + "," + next[1] + "," + lineid +  ").\n";
+          writer.write(fact);
+        }
+        else if (dir.equals("-1") && i > 0) {
+          String[] next = facts.get(i - 1);
+          int nextlineid = Integer.parseInt(next[2]);
+          if (nextlineid != lineid) continue;
+          fact = "nextWithLine(" + node[0] + "," + node[1] + "," + next[0] + "," + next[1] + "," + lineid + ").\n";
+          writer.write(fact);
+        } else if (i > 0 && i < facts.size() - 1) {
+          String[] next = facts.get(i + 1);
+          String[] prev = facts.get(i - 1);
+          int nextlineid = Integer.parseInt(next[2]);
+          int prevlineid = Integer.parseInt(prev[2]);
+
+          String nfact = "";
+          String pfact = "";
+          if (lineid == nextlineid) {
+            nfact = "nextWithLine(" + node[0] + "," + node[1] + "," + next[0] + "," + next[1] + "," + lineid +  ").\n";
+          }
+          if (lineid == prevlineid) {
+            pfact = "nextWithLine(" + node[0] + "," + node[1] + "," + prev[0] + "," + prev[1] + "," + lineid +  ").\n";
+
+          }
+          fact = nfact + pfact;
+          writer.write(fact);
+        }
+
+      }
+
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        writer.close();
+      }
+      catch (Exception ex) {
+        ex.printStackTrace();
+      }
+
+    }
+
+  }
+
   public static void main(String[] argv) {
     // Extract .pl files for all files of the assignment
     FactGenerator nodesFactGenerator = new FactGenerator("nodes", "../resources/data/0/nodes.csv");
@@ -193,6 +258,7 @@ public class FactGenerator {
     FactGenerator linesFactGenerator = new FactGenerator("lines", "../resources/data/0/lines.csv");
     // linesFactGenerator.writeData("lines.pl", false);
     linesFactGenerator.writeLineDirectionData("lines.pl");
+    nodesFactGenerator.writeNext("next.pl", linesFactGenerator);
 
     FactGenerator taxisFactGenerator = new FactGenerator("taxis", "../resources/data/0/taxis.csv");
     taxisFactGenerator.writeData("taxis.pl", false);

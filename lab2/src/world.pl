@@ -1,12 +1,14 @@
+% Consults
 :- [
-  nodes,
-  lines,
-  client,
-  taxis].
+    lines,
+    client,
+    taxis,
+    next,
+    traffic
+    ].
 
 % Node belongs to line L
-belongsTo(X, Y, L) :-
-  nodes(_, X, Y, L).
+belongsTo(X, Y, L) :- nextWithLine(X, Y, _, _, L).
 
 % Line is directed same as nodes
 directed(L) :-
@@ -20,27 +22,13 @@ oppositeDirected(L) :-
 undirected(L) :-
   lineDirection(L, no).
 
-% Computes A = |Y - X|
-abs(X, Y, A) :-
-  (
-    var(A) -> (X >= Y -> A is X - Y;
-    A is Y - X);
-    var(X) -> (X is Y + A; X is Y - A);
-    var(Y) -> (Y is X + A; Y is X - A)
-  ).
-
-% Get adjacent nodes based on graph
-nextWithLine(X, Y, U, V, L) :-
-  nodes(I, X, Y, L),
-  (
-  directed(L) -> J is I + 1;
-  oppositeDirected(L) -> J is I - 1;
-  abs(J, I, 1)
-  ),
-  nodes(J, U, V, L).
-
-% Next without line
+% Next brings the adjacent nodes of a node
 next(X, Y, U, V) :- nextWithLine(X, Y, U, V, _).
+
+% Is true iff there is a path from X, Y to U, V
+canMoveFromTo(X, Y, U, V) :-
+  next(X, Y, P, Q),
+  next(P, Q, U, V).
 
 % Get adjacent nodes avoiding certain types of traffic
 % Example nextAvoidingTraffic(23.7611292,37.9863578, U, V, 0, [high, medium])
@@ -90,7 +78,7 @@ hasTraffic(Traffics, H:M, Type) :-
 
 % Avoid certain types of traffic
 avoidsTrafficTypes(_, _, []).
-avoidsTrafficTypes(_, _, nil).
+avoidsTrafficTypes(_, _, mask).
 avoidsTrafficTypes(Traffics, H:M, [Type | Rest]) :-
   \+hasTraffic(Traffics, H:M, Type),
   avoidsTrafficTypes(Traffics, H:M, Rest).
@@ -103,6 +91,6 @@ fitsLuggage(Type, Luggage) :-
   ).
 
 % Default getters
-getPoint(I, U, V) :- nodes(I, U, V, _).
+getPoint(U, V) :- next(U, V, _, _).
 getClient(I, X, Y, U, V) :- client(I, X, Y, U, V,_, _, _, _).
 getTaxi(I, U, V) :-   taxis(U, V, I, _, _, _, _, _, _, _).

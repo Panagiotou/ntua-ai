@@ -20,11 +20,10 @@ import java.util.Iterator;
 
 public class Graph {
   private ArrayList<Client> clients;
-  private Hashtable<Integer, Node> nodes;
+  private HashSet<Node> nodes;
   private int ntest;
   public double TOLERANCE;
   public Prolog pl;
-  private Set<Integer> nodeKeys;
   private Hashtable<Node, Integer> taxis;
   private Hashtable<Integer, Node> taxisInverse;
   private Hashtable<Integer, Double> taxiClientDist;
@@ -37,20 +36,22 @@ public class Graph {
     TOLERANCE = tol;
     pl = new Prolog(world);
 
+    // Initialization
     clients = pl.getClients();
     nodes = pl.getNodes();
-    nodeKeys = nodes.keySet();
     taxis = pl.getTaxis();
 
     Set<Node> taxiKeys = taxis.keySet();
 
     taxisInverse = new Hashtable<Integer, Node>();
     taxiClientDist = new Hashtable<Integer, Double>();
-    adjacencyList = new Hashtable<Node, ArrayList<Edge>>();
     for (Node t: taxiKeys) {
       Integer id = taxis.get(t);
       taxisInverse.put(id, t);
     }
+
+    // Memoization of adjacent nodes
+    adjacencyList = new Hashtable<Node, ArrayList<Edge>>();
 
   }
 
@@ -92,8 +93,7 @@ public class Graph {
 
     // Initializations
 
-    for (Integer idx : nodeKeys) {
-      Node n = nodes.get(idx);
+    for (Node n: nodes) {
       gScore.put(n, Double.MAX_VALUE);
       fScore.put(n, Double.MAX_VALUE);
     }
