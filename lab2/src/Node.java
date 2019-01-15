@@ -30,18 +30,20 @@ public class Node{
 		}
 		else return nthRoot(Math.pow(Math.abs(x - other.x), p) + Math.pow(Math.abs(y - other.y), p), p);
   }
+
   public int hashCode() {
     String tmp = String.valueOf(x) + String.valueOf(y);
     return tmp.hashCode();
   }
+
   public boolean equals(Object other) {
     if (getClass() != other.getClass()) return false;
     else {
       Node tmp = (Node) other;
       return Objects.equals(x, tmp.x) && Objects.equals(y,  tmp.y);
-
     }
   }
+
   String printCoord(){
     return "Node (x,y) = ("+String.valueOf(x) +","+ String.valueOf(y)  +")";
   }
@@ -50,7 +52,7 @@ public class Node{
     if( !adjacent.isEmpty()){
       System.out.println("This Node has #neighbors = " + String.valueOf(numOfNeighbors));
       for (Edge e : adjacent) {
-        e.printEdge();
+        System.out.println(e.toString());
       }
     }
     else{

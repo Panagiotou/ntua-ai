@@ -13,12 +13,28 @@ public class Visual{
   public Set<Node> NodeSet;
   public int routeId;
   public String color;
+  private int counter;
+  private final String[] colors = {"red", "blue", "green"};
+  private final String[] codes = {"ff0000ff", "50f01414", "ff009900"};
 
-  public Visual(ArrayList<ArrayList<Node>> e, String colour) {
-    this.nodesListList = e;
+  public Visual(String colour) {
+    nodesListList = new ArrayList<ArrayList<Node>>();
     Set<Node> N = new HashSet<>();
-    this.NodeSet = N;
-    this.color = colour;
+    NodeSet = N;
+    color = colour;
+    counter = 0;
+
+  }
+
+  private String getColor() {
+    if (color == null) {
+      counter++;
+      return colors[counter % colors.length];
+    } else return color;
+  }
+
+  public void addNodeList(ArrayList<Node> list) {
+    nodesListList.add(list);
   }
 
   public String createPlacemark(ArrayList<Node> nodeList, int id){
@@ -30,7 +46,7 @@ public class Visual{
     }
     String kmlPlacemark =   "\t\t<Placemark>\n" +
                             "\t\t\t<name> Route " + id + " </name>\n"+
-                            "\t\t\t<styleUrl>#" + this.color +  "</styleUrl>\n" +
+                            "\t\t\t<styleUrl>#" + getColor() +  "</styleUrl>\n" +
                             "\t\t\t<LineString>\n" +
                             "\t\t\t\t<altitudeMode>relative</altitudeMode>\n" +
                             "\t\t\t\t<coordinates>\n" +
@@ -44,33 +60,25 @@ public class Visual{
   public void createKML(String s){
     Writer writer = null;
     try {
-      writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(s), "utf-8"));
+        writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(s), "utf-8"));
         String kmlStart = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                         "\t<kml xmlns=\"http://earth.google.com/kml/2.1\">\n"+
                         "\t<Document>\n"+
                         "\t\t<name>Output KML File</name>\n";
-
-        String kmlStyleGreen =  "\t\t<Style id=\"green\">\n" +
-                                "\t\t\t<LineStyle>\n" +
-                                "\t\t\t\t<color>ff009900</color>\n" +
-                                "\t\t\t\t<width>10</width>\n" +
-                                "\t\t\t</LineStyle>\n"+
-                                "\t\t</Style>\n";
-
-        String kmlStyleRed  =   "\t\t<Style id=\"red\">\n" +
-                                "\t\t\t<LineStyle>\n" +
-                                "\t\t\t\t<color>ff0000ff</color>\n" +
-                                "\t\t\t\t<width>10</width>\n" +
-                                "\t\t\t</LineStyle>\n" +
-                                "\t\t</Style>\n";
-
-
         String kmlEnd = "\t</Document>\n"+
                         "</kml>";
 
         writer.write(kmlStart);
-        writer.write(kmlStyleGreen);
-        writer.write(kmlStyleRed);
+        for (int i = 0; i < colors.length; i++) {
+          String kmlStyle =  "\t\t<Style id=\"" + colors[i] + "\">\n" +
+          "\t\t\t<LineStyle>\n" +
+          "\t\t\t\t<color>" + codes[i] + "</color>\n" +
+          "\t\t\t\t<width>4</width>\n" +
+          "\t\t\t</LineStyle>\n"+
+          "\t\t</Style>\n";
+          writer.write(kmlStyle);
+        }
+
         int i = 0;
         for(ArrayList<Node> nolist: this.nodesListList){
           writer.write(this.createPlacemark(nolist, i));
@@ -79,9 +87,13 @@ public class Visual{
         writer.write(kmlEnd);
 
     } catch (IOException ex) {
-    // Report
+
     } finally {
-       try {writer.close();} catch (Exception ex) {/*ignore*/}
+       try {
+         writer.close();
+       } catch (Exception ex) {
+         ex.printStackTrace();
+       }
     }
   }
 }

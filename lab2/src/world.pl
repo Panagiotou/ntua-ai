@@ -90,7 +90,11 @@ fitsLuggage(Type, Luggage) :-
     true
   ).
 
+% Get taxi rating
+rating(I, R) :-
+  taxis(_, _, I, _, _, _, R, _, _, _).
+
 % Default getters
-getPoint(U, V) :- next(U, V, _, _).
+getPoint(U, V) :- next(U, V, _, _); next(_, _, U, V).
 getClient(I, X, Y, U, V) :- client(I, X, Y, U, V,_, _, _, _).
 getTaxi(I, U, V) :-   taxis(U, V, I, _, _, _, _, _, _, _).

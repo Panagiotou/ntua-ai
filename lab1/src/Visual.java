@@ -13,12 +13,24 @@ public class Visual{
   public Set<Node> NodeSet;
   public int routeId;
   public String color;
+  private int counter;
 
   public Visual(ArrayList<ArrayList<Node>> e, String colour) {
-    this.nodesListList = e;
+    nodesListList = e;
     Set<Node> N = new HashSet<>();
-    this.NodeSet = N;
-    this.color = colour;
+    NodeSet = N;
+    color = colour;
+    counter = 0;
+  }
+
+  private String getColor() {
+    if (color == null) {
+      counter++;
+      if (counter % 2 == 0) return "green";
+      else return "blue";
+    } else {
+      return color;
+    }
   }
 
   public String createPlacemark(ArrayList<Node> nodeList, int id){
@@ -30,7 +42,7 @@ public class Visual{
     }
     String kmlPlacemark =   "\t\t<Placemark>\n" +
                             "\t\t\t<name> Route " + id + " </name>\n"+
-                            "\t\t\t<styleUrl>#" + this.color +  "</styleUrl>\n" +
+                            "\t\t\t<styleUrl>#" + getColor() +  "</styleUrl>\n" +
                             "\t\t\t<LineString>\n" +
                             "\t\t\t\t<altitudeMode>relative</altitudeMode>\n" +
                             "\t\t\t\t<coordinates>\n" +
@@ -53,14 +65,21 @@ public class Visual{
         String kmlStyleGreen =  "\t\t<Style id=\"green\">\n" +
                                 "\t\t\t<LineStyle>\n" +
                                 "\t\t\t\t<color>ff009900</color>\n" +
-                                "\t\t\t\t<width>10</width>\n" +
+                                "\t\t\t\t<width>4</width>\n" +
+                                "\t\t\t</LineStyle>\n"+
+                                "\t\t</Style>\n";
+
+        String kmlStyleBlue =  "\t\t<Style id=\"blue\">\n" +
+                                "\t\t\t<LineStyle>\n" +
+                                "\t\t\t\t<color>50F01414</color>\n" +
+                                "\t\t\t\t<width>4</width>\n" +
                                 "\t\t\t</LineStyle>\n"+
                                 "\t\t</Style>\n";
 
         String kmlStyleRed  =   "\t\t<Style id=\"red\">\n" +
                                 "\t\t\t<LineStyle>\n" +
                                 "\t\t\t\t<color>ff0000ff</color>\n" +
-                                "\t\t\t\t<width>10</width>\n" +
+                                "\t\t\t\t<width>4</width>\n" +
                                 "\t\t\t</LineStyle>\n" +
                                 "\t\t</Style>\n";
 
@@ -71,6 +90,7 @@ public class Visual{
         writer.write(kmlStart);
         writer.write(kmlStyleGreen);
         writer.write(kmlStyleRed);
+        writer.write(kmlStyleBlue);
         int i = 0;
         for(ArrayList<Node> nolist: this.nodesListList){
           writer.write(this.createPlacemark(nolist, i));

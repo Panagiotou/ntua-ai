@@ -50,6 +50,8 @@ public class FactGenerator {
     return convertDelim(x.replaceAll(" |%","").toLowerCase(), "|");
   }
 
+  // Convert delimiter to Prolog list
+  // Example: greek|english becomes [greek, english]
   public static String convertDelim(String x, String delim) {
     if (x.contains(delim)) {
       String replaced = x.replace(delim, ",");
@@ -76,11 +78,12 @@ public class FactGenerator {
       return data;
   }
 
-  public static boolean isNumeric(String str)
-  {
-    return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
+  // Checks if a string is purely numeric
+  public static boolean isNumeric(String str) {
+    return str.matches("-?\\d+(\\.\\d+)?");
   }
 
+  // Pad a CSV line with masks if needed to match dimensions
   private ArrayList<String> pad(String[] f) {
 
     ArrayList<String> temp = new ArrayList<String>();
@@ -109,7 +112,6 @@ public class FactGenerator {
     try (BufferedReader br = new BufferedReader(
                               new InputStreamReader(
                               new FileInputStream(filename), "greek"))) {
-
       line = br.readLine(); // skip labels
 
       while ((line = br.readLine()) != null) {
@@ -159,7 +161,7 @@ public class FactGenerator {
     }
   }
 
-  // Write Prolog File
+  // Write Line Directions File
   public void writeLineDirectionData(String outfile) {
     Writer writer = null;
     try {
@@ -167,6 +169,7 @@ public class FactGenerator {
 
       int i = 0;
       for (String[] fact: facts) {
+        if (fact[1].equals(MASK)) continue;
         String result = "lineDirection" + "(" + fact[0] + "," + fact[3] + ").\n";
         writer.write(result);
       }
@@ -184,11 +187,16 @@ public class FactGenerator {
     }
   }
 
+  // Write adjacency list file
   public void writeNext(String outfile, FactGenerator lines) {
     Hashtable<Integer, String> directions = new Hashtable<Integer, String>();
+    Hashtable<Integer, String> highway = new Hashtable<Integer, String>();
+    Hashtable<Integer, String> access = new Hashtable<Integer, String>();
 
     for (String[] fact: lines.facts) {
       directions.put(Integer.parseInt(fact[0]), fact[3]);
+      highway.put(Integer.parseInt(fact[0]), fact[1]);
+      access.put(Integer.parseInt(fact[0]), fact[9]);
     }
 
     Writer writer = null;
@@ -198,6 +206,10 @@ public class FactGenerator {
         String[] node = facts.get(i);
         int lineid = Integer.parseInt(node[2]);
         String dir = directions.get(lineid);
+        if (highway.get(lineid).equals(MASK) || !access.get(lineid).equals(MASK)) {
+          continue;
+        }
+
         int j = i;
         String fact = null;
         if (dir.equals("yes") && i < facts.size() - 1) {

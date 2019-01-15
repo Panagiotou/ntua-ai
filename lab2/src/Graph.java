@@ -1,7 +1,9 @@
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Collections;
+import java.util.Comparator;
+
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Queue;
@@ -76,7 +78,7 @@ public class Graph {
     return new Pair(argmin, result);
   }
 
-  public Node aStar(Node s, HashSet<Node> goals, int i) {
+  public Node aStar(Node s, HashSet<Node> goals, Visual visual, int taxiId, int clientId) {
     // Closed set
     HashSet<Node> closedSet = new HashSet<Node>();
 
@@ -105,10 +107,6 @@ public class Graph {
     tempArr.add(new Pair(s, 0));
     parent.put(s, tempArr);
 
-    //System.out.println("Starting point is " + s.toString());
-
-    //System.out.println("Equivalent Paths");
-
     Node correct = null;
     boolean flag = true;
 
@@ -121,42 +119,35 @@ public class Graph {
           correct = current.from;
         } else if (correct != null && current.from != correct) break;
 
-        //System.out.println("Goal found with cost from start " + gScore.get(current.from));
         // add it to taxiClientDist hashtable
-        taxiClientDist.put(i, gScore.get(current.from));
-        //System.out.println("Remaining frontier size: " + frontier.size());
-
-        //System.out.print("Goal coordinates " + current.from.toString());
-
-        try {
-          //System.out.print(" which corresponds to taxi " + taxis.get(current.from));
-          //System.out.println(" and came from " + parent.get(current.from).get(parent.get(current.from).size() - 1).first.toString());
-
-        } catch (NullPointerException e) {
-          e.printStackTrace();
-        } finally {
-          System.out.println();
+        if (taxiClientDist.contains(taxiId)) {
+          // Increment if we have chosen this taxi
+          double new_score = taxiClientDist.get(taxiId) + gScore.get(current.from);
+          taxiClientDist.put(taxiId, new_score);
+        } else {
+          taxiClientDist.put(taxiId, gScore.get(current.from));
         }
-        break;
+
+
       }
 
       if (correct != null && current.actual_distance > gScore.get(correct)) break;
 
+      closedSet.add(current.from);
+
       ArrayList<Edge> adjacent = null;
       if (adjacencyList.contains(current.from)) {
-      adjacent = adjacencyList.get(current.from);
-      }
-      else {
-      adjacent = pl.getNext(current.from, false, 0);
-      adjacencyList.put(current.from, adjacent);
+        adjacent = adjacencyList.get(current.from);
+      } else {
+        // Get nodes without heavy traffic
+        adjacent = pl.getNext(current.from, true, clientId);
+        adjacencyList.put(current.from, adjacent);
       }
 
 
       for (Edge e : adjacent) {
-        // System.out.println("Edge" + e.toString());
         // if it is visited
         if (closedSet.contains(e.v)) continue;
-
 
         // relax edge
         double temp = gScore.get(current.from) + e.weight;
@@ -189,18 +180,14 @@ public class Graph {
           parent.put(e.v, tempArr);
         }
 
-
         // update score
         gScore.put(e.v, temp);
         fScore.put(e.v, temp + h_total(e.v, goals).second);
         towards.put(e.v, h_total(e.v, goals).first);
 
-
       }
 
     }
-
-    ArrayList<ArrayList<Node>> result = new ArrayList<ArrayList<Node>>();
 
     Node src = correct;
     Node dst = s;
@@ -222,7 +209,7 @@ public class Graph {
 
       if (u.equals(dst)) {
         npaths++;
-        result.add(path);
+        visual.addNodeList(path);
       }
 
       for (Pair pr : parent.get(u)) {
@@ -232,7 +219,7 @@ public class Graph {
         else {
           flag = gScore.get(u) == pr.second;
         }
-        if (!path.contains(pr.first) && flag  && towards.get(u) == correct) {
+        if (!path.contains(pr.first) && flag) {
           ArrayList<Node> newPath = new ArrayList<Node>(path);
           newPath.add(pr.first);
           q.add(newPath);
@@ -240,86 +227,82 @@ public class Graph {
       }
     }
 
-    //System.out.println("Number of equivalent paths within tolerance " + TOLERANCE + " km: " + npaths);
+    System.out.println("Number of equivalent paths within tolerance " + TOLERANCE + " km: " + npaths);
 
-    /*
-    // Create KML
-    String tl = null;
-
-    Visual printer = null;
-    if (TOLERANCE > 0) {
-      tl = "_tol";
-      printer = new Visual(result, "red");
-    }
-    else {
-      tl = "";
-      printer = new Visual(result, "green");
-    }
-
-
-    printer.createKML("results/testcase_" + ntest + "_client_" + String.valueOf(i) + tl + ".kml");
-    */
-    allKmls.add(result);
     return correct;
   }
 
-  public void simulateRides(Integer topk) {
-    for (Client client: clients) simulateClient(client, topk);
+  public void simulateRides() {
+    for (Client client: clients) simulateClient(client);
 
   }
 
-  public void simulateClient(Client client, Integer topk) {
+  private void displayRanks() {
+   ArrayList<Map.Entry<Integer, Double>> sorted = new ArrayList(taxiClientDist.entrySet());
+   Collections.sort(sorted, new Comparator<Map.Entry<Integer, Double>>(){
+     public int compare(Map.Entry<Integer, Double> o1, Map.Entry<Integer, Double> o2) {
+        return o1.getValue().compareTo(o2.getValue());
+    }});
+
+
+    for (Map.Entry<Integer, Double> taxiScore: sorted) {
+      System.out.println("Taxi: " + taxiScore.getKey() +
+                        " Distance: " + taxiScore.getValue() + " km" +
+                        " Rating: " + pl.getRating(taxiScore.getKey()));
+    }
+
+ }
+
+  public void simulateClient(Client client) {
+
+    taxiClientDist.clear();
     System.out.println("Serving client: " + client.toString());
 
-    System.out.println("Available taxis to serve");
+    System.out.print("Available taxis to serve ");
     ArrayList<Integer> availableTaxis = pl.getGoals(client.clientId);
     System.out.println(availableTaxis.toString());
-    HashSet<Node> goals = new HashSet<Node>();
-    // Show ranks
-    for (Integer availableTaxiId: availableTaxis) {
-      Node taxi = taxisInverse.get(availableTaxiId);
-      goals.add(taxi);
+
+    HashSet<Node> goal = new HashSet<Node>();
+    goal.add(client.source);
+    HashSet<Node> destGoal = new HashSet<Node>();
+    destGoal.add(client.dest);
+
+    // Visualize taxi routes to same KML files
+    Visual taxiVisual = new Visual(null);
+
+    // Separate file for client route
+    Visual routeVisual = new Visual("red");
+
+    for (int taxiId: availableTaxis) {
+      Node taxi = taxisInverse.get(taxiId);
+      aStar(taxi, goal, taxiVisual, taxiId, client.clientId);
     }
-    Hashtable<Integer, Integer> iToId = new Hashtable<Integer, Integer>(); // maps i to taxiId
-    System.out.println("Please choose 1 out of the " + String.valueOf(topk) + " following available taxis:");
-    for(int i=1; i <= topk; i++){
-       Node solution = aStar(client.source , goals, i);
-       goals.remove(solution);
-       iToId.put(i, taxis.get(solution));// map current i to solutions taxi id
-       System.out.println("Taxi " + String.valueOf(i) + " is " + String.valueOf(taxiClientDist.get(i)) + " km away from you.");
-    }
+
+    // Export KML Files
+    taxiVisual.createKML("taxis_" + String.valueOf(TOLERANCE) + ".kml");
+
+    // Display ranks
+    System.out.println("Please choose one taxi of the following");
+    displayRanks();
+
     Scanner in = new Scanner(System.in);
-    Integer choice = in.nextInt();
-    int chosenid = iToId.get(choice);// get taxi Id from i chosen by client
-    Node chosenTaxi = taxisInverse.get(chosenid);
-    Double chosenCost = taxiClientDist.get(choice); // we call this with i, because astar is called with i and not ID
-    // Final aStar to get source - dest result
-    HashSet<Node> destination = new HashSet<Node>();
-    destination.add(client.dest);
-    aStar(client.source , destination, -100);
-    // get client source - dest distance
-    Double routeCost = taxiClientDist.get(-100);
 
-    Double totalCost = chosenCost + routeCost;
-    int level = 0;
-    for (ArrayList<ArrayList<Node>> path : allKmls) {
-      // Create KML
-      String tl = null;
+    // Choose a taxi
+    int choice = -1;
+    do {
+      System.out.print("Enter a choice: ");
+      choice = in.nextInt();
+    } while (!availableTaxis.contains(choice));
 
-      Visual printer = null;
-      if (TOLERANCE > 0) {
-        tl = "_tol";
-        printer = new Visual(path, "red");
-      }
-      else {
-        tl = "";
-        printer = new Visual(path, "green");
-      }
-      printer.createKML("results/level" + String.valueOf(level)  + tl + ".kml");
-      level++;
-    }
-    // biggest level kml is the source destination route.
-    System.out.println("Total route length is " + String.valueOf(totalCost) + " km.");
+    System.out.println("Calculating distance to destination");
+    aStar(client.source, destGoal, routeVisual, -1, client.clientId);
+    double total = taxiClientDist.get(choice) + taxiClientDist.get(-1);
+
+    System.out.println("Route length: " + taxiClientDist.get(-1) + " km");
+    System.out.println("Total distance travelled by taxi " + choice + "to destination: " + total + " km");
+
+    routeVisual.createKML("route_" + String.valueOf(TOLERANCE) + ".kml");
+
   }
 
 
@@ -328,9 +311,8 @@ public class Graph {
     System.out.println("Running Testcases");
     File testDir = new File("../resources/data");
     int ncases = testDir.list().length;
+    double tolerance = 0.0;
     ArrayList<Double> tolerances = new ArrayList<Double>();
-    tolerances.add(0.0); // no tolerance
-    tolerances.add(0.001); // 10m tolerance
     try {
       ncases = Integer.parseInt(args[0]);
     }
@@ -343,14 +325,21 @@ public class Graph {
       System.out.println("No ncases provided, defaults to " + String.valueOf(ncases));
     }
 
+    try {
+      tolerance = Double.parseDouble(args[1]);
+    }
+    catch (NumberFormatException e) {
+      System.err.println("Argument" + args[1] + " must be a double.");
+      // Program ends
+      System.exit(1);
+    }
+    catch (ArrayIndexOutOfBoundsException e) {
+      System.out.println("Default tolerance is " + tolerance + "km");
+    }
+
     for (int i = 0; i < ncases; i++) {
-      System.out.println("Testcase #" + i);
-      Graph G = new Graph(i, tolerances.get(0), "world.pl");
-      for (double t: tolerances) {
-        G.TOLERANCE = t;
-        System.out.println("Tolerance: " + t);
-        G.simulateRides(5);
-      }
+      Graph G = new Graph(i, tolerance, "world.pl");
+      G.simulateRides();
     }
 
   }

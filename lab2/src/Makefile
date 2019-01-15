@@ -2,9 +2,7 @@ FLAGS=-cp jipconsole.jar
 JAVAC=javac $(FLAGS)
 JAVA=java $(FLAGS)
 
-all: 
-	$(MAKE) generate
-	$(MAKE) run
+all: generate run
 
 generate:
 	$(JAVAC) FactGenerator.java
@@ -14,14 +12,10 @@ wrapper:
 	$(JAVAC) Prolog.java
 	$(JAVA) Prolog
 
-run:
+run: world.pl next.pl lines.pl traffic.pl taxis.pl client.pl
 	$(JAVAC) Graph.java
 	$(JAVA) Graph
 
-prolog_example:
-	$(JAVAC) PrologExample.java
-	$(JAVA) PrologExample
-
 clean:
-	rm *.class
-
+	rm -rf *.class
+	rm -rf next.pl lines.pl traffic.pl taxis.pl client.pl
