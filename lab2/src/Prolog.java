@@ -38,7 +38,7 @@ public class Prolog {
 
   // Get rating for a taxi
   public String getRating(int taxiId) {
-    
+
     JIPQuery jipQuery = jip.openSynchronousQuery(parser.parseTerm("rating(" + String.valueOf(taxiId) + ", G)"));
     term = jipQuery.nextSolution();
     // JIProlog does not support floats very well
@@ -53,6 +53,14 @@ public class Prolog {
     } catch (Exception e) {
       return "unknown";
     }
+
+  }
+
+  public double haversine(Node u, Node v) {
+    String q = "haversine(" + u.x + "," + u.y + "," + v.x + "," + v.y + ", H)";
+    JIPQuery jipQuery = jip.openSynchronousQuery(parser.parseTerm(q));
+    term = jipQuery.nextSolution();
+    return Double.parseDouble(term.getVariablesTable().get("H").toString());
 
   }
 
@@ -167,7 +175,9 @@ public class Prolog {
 
   public static void main(String[] arg) throws IOException, JIPSyntaxErrorException {
     Prolog p = new Prolog("world.pl");
-    System.out.println(p.getRating(130));
+    Node u = new Node(23.7614542,37.9864972);
+    Node v = new Node(23.7615506,37.9866341);
+    System.out.println(p.haversine(u, v));
   }
 
 }

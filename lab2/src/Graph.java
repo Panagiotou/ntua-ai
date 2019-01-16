@@ -227,40 +227,48 @@ public class Graph {
       }
     }
 
-    System.out.println("Number of equivalent paths within tolerance " + TOLERANCE + " km: " + npaths);
 
     return correct;
   }
 
-  public void simulateRides() {
-    for (Client client: clients) simulateClient(client);
+  public void simulateRides(int topk) {
+    for (Client client: clients) simulateClient(client, topk);
 
   }
 
-  private void displayRanks() {
+  private void displayRanks(int topk, ArrayList<Integer> availableTaxis) {
    ArrayList<Map.Entry<Integer, Double>> sorted = new ArrayList(taxiClientDist.entrySet());
    Collections.sort(sorted, new Comparator<Map.Entry<Integer, Double>>(){
      public int compare(Map.Entry<Integer, Double> o1, Map.Entry<Integer, Double> o2) {
         return o1.getValue().compareTo(o2.getValue());
     }});
 
-
+    ArrayList<Integer> availableIntersect = new ArrayList<Integer>();
+    int i = 0;
+    System.out.println("FIRST RANKING: of top " + topk + " taxis according to distance criteria");
     for (Map.Entry<Integer, Double> taxiScore: sorted) {
-      System.out.println("Taxi: " + taxiScore.getKey() +
-                        " Distance: " + taxiScore.getValue() + " km" +
-                        " Rating: " + pl.getRating(taxiScore.getKey()));
+      if (i >= topk) break;
+      System.out.println((i + 1) + ". Taxi: " + taxiScore.getKey() +
+                        "\tDistance: " + taxiScore.getValue() + " km" +
+                        "\tRating: " + pl.getRating(taxiScore.getKey()));
+      i++;
+      if (availableTaxis.contains(taxiScore.getKey())) availableIntersect.add(taxiScore.getKey());
+    }
+
+    System.out.println("SECOND RANKING: The following taxis are available to serve you according to your language, commute time, capacity and availability");
+    for (int k = 0; k < availableIntersect.size(); k++) {
+      System.out.println((k + 1) + ". Taxi: " + availableIntersect.get(k));
     }
 
  }
 
-  public void simulateClient(Client client) {
+  public void simulateClient(Client client, int topk) {
 
     taxiClientDist.clear();
     System.out.println("Serving client: " + client.toString());
 
-    System.out.print("Available taxis to serve ");
     ArrayList<Integer> availableTaxis = pl.getGoals(client.clientId);
-    System.out.println(availableTaxis.toString());
+
 
     HashSet<Node> goal = new HashSet<Node>();
     goal.add(client.source);
@@ -273,7 +281,10 @@ public class Graph {
     // Separate file for client route
     Visual routeVisual = new Visual("red");
 
-    for (int taxiId: availableTaxis) {
+    // Run for all taxis
+    Set<Integer> taxiKeys = taxisInverse.keySet();
+    System.out.println("Calculating routes. Please wait...");
+    for (int taxiId: taxiKeys) {
       Node taxi = taxisInverse.get(taxiId);
       aStar(taxi, goal, taxiVisual, taxiId, client.clientId);
     }
@@ -282,8 +293,8 @@ public class Graph {
     taxiVisual.createKML("taxis_" + String.valueOf(TOLERANCE) + ".kml");
 
     // Display ranks
-    System.out.println("Please choose one taxi of the following");
-    displayRanks();
+    System.out.println("Displaying Ranks");
+    displayRanks(topk, availableTaxis);
 
     Scanner in = new Scanner(System.in);
 
@@ -305,6 +316,13 @@ public class Graph {
 
   }
 
+  public static void usage() {
+    System.out.println("Usage: java -cp jipconsole.jar Graph <N-TESTCASES> <TOLERANCE> <TOPK>");
+    System.out.println("<N-TESTCASES>\t\tis the number of testcases in ../resources/data");
+    System.out.println("<TOLERANCE>\t\tis the tolerance for equivalent paths (default is 0.0km)");
+    System.out.println("<TOPK>\t\t\tis the default for ranking the taxis (default is 5)");
+  }
+
 
   public static void main(String[] args) throws IOException, JIPSyntaxErrorException {
 
@@ -317,7 +335,7 @@ public class Graph {
       ncases = Integer.parseInt(args[0]);
     }
     catch (NumberFormatException e) {
-      System.err.println("Argument" + args[0] + " must be an integer.");
+      if (args[0].equals("-h")) usage();
       // Program ends
       System.exit(1);
     }
@@ -337,9 +355,22 @@ public class Graph {
       System.out.println("Default tolerance is " + tolerance + "km");
     }
 
+    int topk = 5;
+    try {
+      topk = Integer.parseInt(args[2]);
+    }
+    catch (NumberFormatException e) {
+      // Program ends
+      System.exit(1);
+    }
+    catch (ArrayIndexOutOfBoundsException e) {
+      System.out.println("Default value of TOP-K is " + topk);
+    }
+
+
     for (int i = 0; i < ncases; i++) {
       Graph G = new Graph(i, tolerance, "world.pl");
-      G.simulateRides();
+      G.simulateRides(topk);
     }
 
   }

@@ -11,7 +11,7 @@ public class Edge {
 	}
 
 	public String toString() {
-		return "From " + u.printCoord() + " To : " + v.printCoord() + " W = " + String.valueOf(weight);
+		return "From " + u.toString() + " To : " + v.toString() + " W = " + weight;
 	}
 
 }

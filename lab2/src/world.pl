@@ -90,6 +90,24 @@ fitsLuggage(Type, Luggage) :-
     true
   ).
 
+
+  % Distance predicate
+  haversine(Lon1, Lat1, Lon2, Lat2, H) :-
+    Theta is Lon1 - Lon2,
+    raddians(Lat1, RLat1),
+    raddians(Lat2, RLat2),
+    raddians(Theta, Rtheta),
+    S1 is sin(RLat1),
+    S2 is sin(RLat2),
+    C1 is cos(RLat1),
+    C2 is cos(RLat2),
+    CT is cos(RLat2),
+    Distance is (S1 * S2) + (C1 * C2 * CT),
+    ACos is acos(Distance),
+    deggrees(ACos, D),
+    H is D * 111.18957696.
+
+
 % Get taxi rating
 rating(I, R) :-
   taxis(_, _, I, _, _, _, R, _, _, _).
@@ -98,3 +116,11 @@ rating(I, R) :-
 getPoint(U, V) :- next(U, V, _, _); next(_, _, U, V).
 getClient(I, X, Y, U, V) :- client(I, X, Y, U, V,_, _, _, _).
 getTaxi(I, U, V) :-   taxis(U, V, I, _, _, _, _, _, _, _).
+
+% Degrees to radians
+raddians(P, Q) :-
+  Q is P * pi / 180.
+
+% Radians to degrees
+deggrees(P, Q) :-
+  Q is P * 180 / pi.

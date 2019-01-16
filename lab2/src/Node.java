@@ -1,34 +1,13 @@
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class Node{
+public class Node {
   public double x;
   public double y;
-  public int numOfNeighbors;
-  public ArrayList<Edge> adjacent;
 
   public Node(double X, double Y) {
     x = X;
     y = Y;
-    numOfNeighbors = 0;
-    adjacent = new ArrayList<Edge>();
-  }
-
-  public Node() {
-    x = 0;
-    y = 0;
-    numOfNeighbors = 0;
-    adjacent = new ArrayList<Edge>();
-  }
-
-  public double pNorm(Node other, int p) {
-	  	if (p == 1) {
-	  		return Math.abs(x - other.x) + Math.abs(y - other.y);
-	  	}
-	  	else if (p == 2) {
-			return Math.sqrt(Math.pow(x - other.x, 2) + Math.pow(y - other.y, 2));
-		}
-		else return nthRoot(Math.pow(Math.abs(x - other.x), p) + Math.pow(Math.abs(y - other.y), p), p);
   }
 
   public int hashCode() {
@@ -44,26 +23,10 @@ public class Node{
     }
   }
 
-  String printCoord(){
-    return "Node (x,y) = ("+String.valueOf(x) +","+ String.valueOf(y)  +")";
-  }
-  public void printNode(){
-    System.out.println("Node (x,y) = ("+String.valueOf(x) +","+ String.valueOf(y)  +")");
-    if( !adjacent.isEmpty()){
-      System.out.println("This Node has #neighbors = " + String.valueOf(numOfNeighbors));
-      for (Edge e : adjacent) {
-        System.out.println(e.toString());
-      }
-    }
-    else{
-      System.out.println("This Node has no Neighbors");
-    }
-  }
 
   public String toString(){
     return "(x,y) = ("+String.valueOf(x) +","+ String.valueOf(y)  +")";
   }
-
 
   public double haversine(Node p) {
 	  // haversine distance calclulation
@@ -81,25 +44,4 @@ public class Node{
 
   }
 
-
-
-  public static double nthRoot(double A, int N) {
-
-    double xPre = Math.random() % 10;
-    double eps = 0.001;
-
-    double delX = 2147483647;
-
-    double xK = 0.0;
-
-    while (delX > eps)
-    {
-      xK = ((N - 1.0) * xPre +
-      (double)A / Math.pow(xPre, N - 1)) / (double)N;
-      delX = Math.abs(xK - xPre);
-      xPre = xK;
-    }
-
-    return xK;
-  }
 }
