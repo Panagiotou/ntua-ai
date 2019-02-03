@@ -29,18 +29,18 @@ public class Node {
   }
 
   public double haversine(Node p) {
-	  // haversine distance calclulation
+    // haversine distance calclulation
 
-	  double lon1 = p.x;
-	  double lat1 = p.y;
-	  double lon2 = x;
-	  double lat2 = y;
-	  double theta = lon1 - lon2;
+    double lon1 = p.x;
+    double lat1 = p.y;
+    double lon2 = x;
+    double lat2 = y;
+    double theta = lon1 - lon2;
 
-	  double distance = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2)) +
-			  Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
+    double distance = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2)) +
+    Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
 
-	  return Math.toDegrees(Math.acos(distance)) * 111.18957696;
+    return Math.toDegrees(Math.acos(distance)) * 111.18957696;
 
   }
 

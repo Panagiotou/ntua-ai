@@ -19,12 +19,12 @@ public class Prolog {
   public Prolog(String db) throws JIPSyntaxErrorException, IOException {
     jip = new JIPEngine();
     jip.consultFile(db);
-		parser = jip.getTermParser();
+    parser = jip.getTermParser();
   }
 
   // Get taxis (goals) for a certain client
   public ArrayList<Integer> getGoals(int clientId) {
-		JIPQuery jipQuery = jip.openSynchronousQuery(parser.parseTerm("goal(" + clientId + ", G)"));
+    JIPQuery jipQuery = jip.openSynchronousQuery(parser.parseTerm("goal(" + clientId + ", G)"));
     ArrayList<Integer> result = new ArrayList<Integer>();
     term = jipQuery.nextSolution();
     while (term != null) {

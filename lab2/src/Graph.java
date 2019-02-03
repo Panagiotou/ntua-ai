@@ -287,10 +287,11 @@ public class Graph {
     for (int taxiId: taxiKeys) {
       Node taxi = taxisInverse.get(taxiId);
       aStar(taxi, goal, taxiVisual, taxiId, client.clientId);
+      taxiVisual.addLegend("Taxi " + String.valueOf(taxiId));
     }
 
     // Export KML Files
-    taxiVisual.createKML("taxis_" + String.valueOf(TOLERANCE) + ".kml");
+    taxiVisual.createKML("../results/taxis_" + String.valueOf(TOLERANCE) + ".kml", true);
 
     // Display ranks
     System.out.println("Displaying Ranks");
@@ -307,12 +308,13 @@ public class Graph {
 
     System.out.println("Calculating distance to destination");
     aStar(client.source, destGoal, routeVisual, -1, client.clientId);
+    routeVisual.addLegend("Client Route");
     double total = taxiClientDist.get(choice) + taxiClientDist.get(-1);
 
     System.out.println("Route length: " + taxiClientDist.get(-1) + " km");
     System.out.println("Total distance travelled by taxi " + choice + "to destination: " + total + " km");
 
-    routeVisual.createKML("route_" + String.valueOf(TOLERANCE) + ".kml");
+    routeVisual.createKML("../results/route_" + String.valueOf(TOLERANCE) + ".kml", true);
 
   }
 

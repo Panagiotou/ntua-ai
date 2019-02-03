@@ -5,9 +5,9 @@ public class Edge {
 	public double weight;
 
 	public Edge(Node from, Node to) {
-    u = from;
-    v = to;
-    weight = u.haversine(v);
+    		u = from;
+    		v = to;
+    		weight = u.haversine(v);
 	}
 
 	public String toString() {

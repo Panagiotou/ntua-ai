@@ -21,9 +21,9 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
 /*
- * This class is responsible for converting CSV files
- * to Prolog facts
- *
+* This class is responsible for converting CSV files
+* to Prolog facts
+*
 */
 
 public class FactGenerator {
@@ -35,12 +35,12 @@ public class FactGenerator {
   public int cutlen;
 
   public FactGenerator(String faName, String fName) {
-      factName = faName;
-      filename = fName;
-      facts = new ArrayList<String[]>();
-      maxlen = 0;
-      cutlen = -1;
-      parseFacts();
+    factName = faName;
+    filename = fName;
+    facts = new ArrayList<String[]>();
+    maxlen = 0;
+    cutlen = -1;
+    parseFacts();
 
   }
 
@@ -69,13 +69,13 @@ public class FactGenerator {
 
   // Filters the array of data
   private String[] filterData(String[] data) {
-      for (int i = 0; i < data.length; i++) {
-        if (data[i].equals("")) data[i] = MASK;
-        if (!isPureAscii(data[i]) && !isNumeric(data[i])) data[i] = MASK;
-        data[i] = normalize(data[i]);
-      }
+    for (int i = 0; i < data.length; i++) {
+      if (data[i].equals("")) data[i] = MASK;
+      if (!isPureAscii(data[i]) && !isNumeric(data[i])) data[i] = MASK;
+      data[i] = normalize(data[i]);
+    }
 
-      return data;
+    return data;
   }
 
   // Checks if a string is purely numeric
@@ -110,8 +110,8 @@ public class FactGenerator {
     String cvsSplitBy = ",";
 
     try (BufferedReader br = new BufferedReader(
-                              new InputStreamReader(
-                              new FileInputStream(filename), "greek"))) {
+    new InputStreamReader(
+    new FileInputStream(filename), "greek"))) {
       line = br.readLine(); // skip labels
 
       while ((line = br.readLine()) != null) {
@@ -124,11 +124,11 @@ public class FactGenerator {
 
         if (filtered.length > maxlen) maxlen = filtered.length;
 
-        }
-
-      } catch (IOException e) {
-        e.printStackTrace();
       }
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 
   }
 
